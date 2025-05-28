@@ -12,6 +12,17 @@ import 'animate.css'
 import '../styles/global.css'
 import '../styles/home.css'
 
+// 🖼️ Local room images (you must have these in src/assets/)
+import room1 from '../assets/room1.jpg'
+import room2 from '../assets/room2.jpg'
+import room3 from '../assets/room3.jpg'
+import room4 from '../assets/room4.jpg'
+import room5 from '../assets/room5.jpg'
+import room6 from '../assets/room6.jpg'
+import room7 from '../assets/room7.jpg'
+import room8 from '../assets/room8.jpg'
+import room9 from '../assets/room9.jpg'
+
 const Home = () => {
   useEffect(() => {
     AOS.init({ duration: 800 })
@@ -19,17 +30,17 @@ const Home = () => {
 
   const heroSlides = [
     {
-      img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c',
+      img: room1,
       title: 'Welcome to Abobby Nwa Hotel & Suites',
       desc: 'Luxury meets comfort in every detail.',
     },
     {
-      img: 'https://images.unsplash.com/photo-1553440569-bcc63803a83d',
+      img: room2,
       title: 'Experience Pure Elegance',
       desc: 'Stay in our Deluxe & Executive rooms.',
     },
     {
-      img: 'https://images.unsplash.com/photo-1560347876-aeef00ee58a1',
+      img: room3,
       title: 'Relax in Presidential Style',
       desc: 'The finest stay in the city.',
     },
@@ -39,25 +50,25 @@ const Home = () => {
     {
       name: 'Standard',
       desc: 'Affordable comfort for travelers.',
-      image: 'https://source.unsplash.com/600x400/?hotel,standard',
+      image: room4,
       link: '/rooms?category=standard',
     },
     {
       name: 'Deluxe',
       desc: 'Enhanced space with elegant decor.',
-      image: 'https://source.unsplash.com/600x400/?hotel,deluxe',
+      image: room5,
       link: '/rooms?category=deluxe',
     },
     {
       name: 'Executive',
       desc: 'Business class service and privacy.',
-      image: 'https://source.unsplash.com/600x400/?hotel,executive',
+      image: room6,
       link: '/rooms?category=executive',
     },
     {
       name: 'Presidential',
       desc: 'Unmatched luxury and exclusivity.',
-      image: 'https://source.unsplash.com/600x400/?hotel,presidential',
+      image: room7,
       link: '/rooms?category=presidential',
     },
   ]

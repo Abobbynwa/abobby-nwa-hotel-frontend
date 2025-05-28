@@ -1,83 +1,54 @@
-import React, { useState, useEffect } from 'react'
-import { useAuth } from '../context/AuthContext'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import '../styles/review.css'
 
 const Review = () => {
-  const { user } = useAuth()
   const navigate = useNavigate()
-  const [rating, setRating] = useState(0)
-  const [comment, setComment] = useState('')
-  const [reviews, setReviews] = useState([])
+  const [booking, setBooking] = useState(null)
+  const [refId, setRefId] = useState('')
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login?redirect=/review')
-    }
+    const data = JSON.parse(localStorage.getItem('bookingData'))
+    if (!data) return navigate('/rooms')
 
-    const saved = JSON.parse(localStorage.getItem('reviews')) || []
-    setReviews(saved)
-  }, [user])
+    // Calculate nights
+    const start = new Date(data.checkIn)
+    const end = new Date(data.checkOut)
+    const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24))
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const newReview = {
-      user: user.name,
-      rating,
-      comment,
-      date: new Date().toLocaleDateString(),
-    }
+    // Generate reference ID
+    const ref = `ABH-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
 
-    const updatedReviews = [newReview, ...reviews]
-    setReviews(updatedReviews)
-    localStorage.setItem('reviews', JSON.stringify(updatedReviews))
-    setRating(0)
-    setComment('')
-  }
+    setRefId(ref)
+    setBooking({ ...data, nights, total: nights * data.room.price })
+  }, [])
+
+  if (!booking) return <p className="container">Fetching receipt...</p>
+
+  const { room, fullName, email, guests, checkIn, checkOut, nights, total } = booking
 
   return (
-    <div className="container">
-      <h2>⭐ Leave a Review</h2>
+    <div className="container review-page">
+      <h2 className="section-title">✅ Booking Confirmed!</h2>
 
-      <form onSubmit={handleSubmit} className="review-form">
-        <label>Rating:</label>
-        <div className="stars">
-          {[1, 2, 3, 4, 5].map((num) => (
-            <span
-              key={num}
-              className={rating >= num ? 'star active' : 'star'}
-              onClick={() => setRating(num)}
-            >
-              ★
-            </span>
-          ))}
+      <div className="review-box">
+        <img src={room.images?.[0]} alt={room.name} className="review-img" />
+
+        <div className="review-summary">
+          <h3>{room.name}</h3>
+          <p><strong>Reference:</strong> {refId}</p>
+          <p><strong>Guest:</strong> {fullName}</p>
+          <p><strong>Email:</strong> {email}</p>
+          <p><strong>Guests:</strong> {guests}</p>
+          <p><strong>Stay:</strong> {checkIn} → {checkOut}</p>
+          <p><strong>Nights:</strong> {nights}</p>
+          <p><strong>Total Paid:</strong> ₦{total}</p>
         </div>
+      </div>
 
-        <textarea
-          rows="4"
-          placeholder="Write your review here..."
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          required
-        />
-
-        <button type="submit" className="btn btn-glow">Submit Review</button>
-      </form>
-
-      <h3 style={{ marginTop: '2rem' }}>📃 Recent Reviews</h3>
-      <div className="review-list">
-        {reviews.length === 0 && <p>No reviews yet.</p>}
-        {reviews.map((rev, i) => (
-          <div key={i} className="review-card">
-            <div className="review-header">
-              <strong>{rev.user}</strong>
-              <span className="stars">
-                {'★'.repeat(rev.rating)}{'☆'.repeat(5 - rev.rating)}
-              </span>
-            </div>
-            <p>{rev.comment}</p>
-            <small>{rev.date}</small>
-          </div>
-        ))}
+      <div className="feedback-box">
+        <h4>📝 Want to leave a feedback?</h4>
+        <a href="/contact" className="btn btn-outline">Send a Message</a>
       </div>
     </div>
   )

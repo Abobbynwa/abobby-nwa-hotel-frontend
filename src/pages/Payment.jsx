@@ -1,38 +1,48 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getRoomById } from '../utils/roomData'
+import '../styles/payment.css'
 
 const Payment = () => {
   const navigate = useNavigate()
   const [booking, setBooking] = useState(null)
-  const [method, setMethod] = useState('paystack') // or 'stripe'
+  const [method, setMethod] = useState('paystack')
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem('bookingData'))
     if (!data) return navigate('/rooms')
-    setBooking(data)
+
+    // Compute duration
+    const start = new Date(data.checkIn)
+    const end = new Date(data.checkOut)
+    const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24))
+
+    const room = getRoomById(data.room.id)
+    const total = room.price * nights
+
+    setBooking({ ...data, room, nights, total })
   }, [])
 
   const handlePayment = () => {
-    // Mock payment success
     alert(`Payment successful via ${method.toUpperCase()}!`)
     navigate('/review')
   }
 
   if (!booking) return <p className="container">Loading payment info...</p>
 
-  const { room, fullName, email, guests, checkIn, checkOut } = booking
+  const { room, fullName, email, guests, checkIn, checkOut, nights, total } = booking
 
   return (
     <div className="container">
       <h2>💳 Payment</h2>
 
       <div className="payment-summary">
-        <img src={room.image} alt={room.name} style={{ width: '100%', maxWidth: 400, borderRadius: 8 }} />
+        <img src={room.images?.[0]} alt={room.name} style={{ maxWidth: 400, borderRadius: 8 }} />
         <h3>{room.name}</h3>
         <p><strong>Guest:</strong> {fullName} ({email})</p>
         <p><strong>Guests:</strong> {guests}</p>
-        <p><strong>Stay:</strong> {checkIn} → {checkOut}</p>
-        <p><strong>Total:</strong> ${room.price} / night</p>
+        <p><strong>Stay:</strong> {checkIn} → {checkOut} ({nights} nights)</p>
+        <p><strong>Total:</strong> ₦{room.price} x {nights} = <b>₦{total}</b></p>
       </div>
 
       <div className="payment-method">
@@ -46,7 +56,6 @@ const Payment = () => {
           />
           Paystack
         </label>
-
         <label>
           <input
             type="radio"

@@ -1,0 +1,88 @@
+.payment-summary {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.06);
+  margin-bottom: 2rem;
+  max-width: 600px;
+}
+
+.payment-summary img {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+.payment-summary h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #101820;
+}
+
+.payment-summary p {
+  font-size: 1rem;
+  margin-bottom: 0.6rem;
+  color: #333;
+}
+
+.payment-method {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.payment-method label {
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f1f1f1;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  transition: 0.3s;
+}
+
+.payment-method input[type="radio"] {
+  accent-color: #101820;
+  transform: scale(1.2);
+}
+
+.payment-method label:hover {
+  background: #eaeaea;
+}
+
+.btn-glow {
+  padding: 12px 30px;
+  font-size: 1rem;
+  border-radius: 6px;
+  background: #101820;
+  color: white;
+  border: none;
+  transition: 0.3s ease;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.btn-glow:hover {
+  background: #ffc107;
+  color: black;
+  box-shadow: 0 0 25px #ffc107aa;
+}
+
+.payment-summary {
+  margin: 2rem 0;
+}
+
+.payment-method {
+  display: flex;
+  gap: 2rem;
+  margin: 1.5rem 0;
+}
+
+.payment-method label {
+  font-weight: 600;
+  font-size: 1rem;
+}

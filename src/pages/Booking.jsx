@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-
-const fakeRoomData = {
-  1: { id: 1, name: 'Deluxe Room', price: 120, image: 'https://source.unsplash.com/600x400/?hotel,room' },
-  2: { id: 2, name: 'Executive Suite', price: 180, image: 'https://source.unsplash.com/600x400/?luxury,suite' }
-}
+import AOS from 'aos'
+import 'aos/dist/aos.css'
+import '../styles/booking.css'
+import { getRoomById } from '../utils/roomData'
 
 const Booking = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
 
   const [room, setRoom] = useState(null)
   const [formData, setFormData] = useState({
@@ -22,40 +19,117 @@ const Booking = () => {
   })
 
   useEffect(() => {
-    if (!user) {
-      navigate(`/login?redirect=/booking/${id}`)
-      return
+    AOS.init({ duration: 600 })
+    const fetchedRoom = getRoomById(parseInt(id))
+    if (fetchedRoom) {
+      setRoom(fetchedRoom)
+    } else {
+      navigate('/rooms') // invalid ID
     }
+  }, [id])
 
-    setRoom(fakeRoomData[id])
-    setFormData({ ...formData, fullName: user.name, email: user.email })
-  }, [id, user])
-
-  const handleChange = e => {
+  const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    localStorage.setItem('bookingData', JSON.stringify({ ...formData, room }))
-    navigate('/payment')
+
+    const start = new Date(formData.checkIn)
+    const end = new Date(formData.checkOut)
+    const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24))
+    const total = nights * room.price
+
+    const bookingPayload = {
+      ...formData,
+      roomType: room.type,
+      roomId: room.id,
+      total,
+    }
+
+    try {
+      const res = await fetch('http://localhost:5000/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingPayload),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        localStorage.setItem(
+          'bookingData',
+          JSON.stringify({
+            ...formData,
+            room,
+            total,
+            reference: data.reference,
+          })
+        )
+        alert(`Booking confirmed. Reference: ${data.reference}`)
+        navigate('/review')
+      } else {
+        alert('Booking failed: ' + data.error)
+      }
+    } catch (err) {
+      console.error('Booking Error:', err)
+      alert('Something went wrong')
+    }
   }
 
   if (!room) return <p className="container">Loading booking info...</p>
 
   return (
     <div className="container">
-      <h2>📝 Book {room.name}</h2>
-      <img src={room.image} alt={room.name} style={{ maxWidth: '500px', borderRadius: '8px' }} />
+      <h2 className="section-title" data-aos="fade-down">📝 Book {room.name}</h2>
 
-      <form onSubmit={handleSubmit} className="booking-form">
-        <input type="text" name="fullName" value={formData.fullName} placeholder="Full Name" onChange={handleChange} required />
-        <input type="email" name="email" value={formData.email} placeholder="Email Address" onChange={handleChange} required />
-        <input type="number" name="guests" placeholder="Number of Guests" min={1} max={6} onChange={handleChange} required />
+      <img
+        src={room.images?.[0]}
+        alt={room.name}
+        className="booking-image"
+        data-aos="zoom-in"
+      />
+
+      <form onSubmit={handleSubmit} className="booking-form" data-aos="fade-up">
+        <input
+          type="text"
+          name="fullName"
+          placeholder="Full Name"
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email Address"
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="number"
+          name="guests"
+          min={1}
+          max={6}
+          placeholder="Number of Guests"
+          onChange={handleChange}
+          required
+        />
         <label>Check-in Date:</label>
-        <input type="date" name="checkIn" onChange={handleChange} required />
+        <input
+          type="date"
+          name="checkIn"
+          onChange={handleChange}
+          required
+        />
         <label>Check-out Date:</label>
-        <input type="date" name="checkOut" onChange={handleChange} required />
+        <input
+          type="date"
+          name="checkOut"
+          onChange={handleChange}
+          required
+        />
 
         <button type="submit" className="btn btn-glow">Proceed to Payment</button>
       </form>

@@ -1,0 +1,45 @@
+.room-detail-page {
+  padding: 2rem 0;
+}
+
+.room-gallery {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.room-image {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+}
+
+.room-detail-desc {
+  font-size: 1.1rem;
+  margin-bottom: 1.2rem;
+  color: #444;
+}
+
+.room-price {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.amenities-list {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 2rem;
+}
+
+.amenities-list li {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  margin: 1rem 0 0.5rem;
+}

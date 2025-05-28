@@ -1,0 +1,37 @@
+.review-page {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.review-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+  margin-top: 2rem;
+  justify-content: center;
+}
+
+.review-img {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.review-summary {
+  text-align: left;
+  max-width: 400px;
+}
+
+.review-summary p {
+  margin-bottom: 0.7rem;
+  font-size: 1rem;
+}
+
+.feedback-box {
+  margin-top: 3rem;
+}

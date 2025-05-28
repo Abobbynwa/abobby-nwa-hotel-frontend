@@ -1,0 +1,46 @@
+.room-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1.5rem 0 2rem;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border: 2px solid #101820;
+  background: white;
+  color: #101820;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+  background: #101820;
+  color: white;
+}
+
+.price-range {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: center;
+}
+
+.badge-wrap {
+  margin: 0.5rem 0;
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  background: #eee;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  color: #333;
+  font-weight: 500;
+}

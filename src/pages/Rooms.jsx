@@ -1,43 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import '../styles/global.css'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
+import { getRoomById } from '../utils/roomData'
+import '../styles/global.css'
+import '../styles/rooms.css'
 
-const allRooms = [
-  ...Array.from({ length: 30 }, (_, i) => ({
-    id: i + 1,
-    name: 'Standard Room',
-    price: 80,
-    type: 'standard',
-    image: 'https://source.unsplash.com/400x300/?room,standard'
-  })),
-  ...Array.from({ length: 30 }, (_, i) => ({
-    id: i + 31,
-    name: 'Deluxe Room',
-    price: 120,
-    type: 'deluxe',
-    image: 'https://source.unsplash.com/400x300/?room,deluxe'
-  })),
-  ...Array.from({ length: 30 }, (_, i) => ({
-    id: i + 61,
-    name: 'Executive Suite',
-    price: 180,
-    type: 'executive',
-    image: 'https://source.unsplash.com/400x300/?room,executive'
-  })),
-  ...Array.from({ length: 30 }, (_, i) => ({
-    id: i + 91,
-    name: 'Presidential Suite',
-    price: 250,
-    type: 'presidential',
-    image: 'https://source.unsplash.com/400x300/?room,presidential'
-  })),
-]
+// 🔁 Generate 40 rooms dynamically using getRoomById()
+const allRooms = Array.from({ length: 40 }, (_, i) => getRoomById(i + 1))
 
 const Rooms = () => {
   const location = useLocation()
   const [category, setCategory] = useState('all')
+  const [maxPrice, setMaxPrice] = useState(500000)
   const [filteredRooms, setFilteredRooms] = useState([])
 
   useEffect(() => {
@@ -49,17 +24,22 @@ const Rooms = () => {
   }, [location.search])
 
   useEffect(() => {
-    const filtered = category === 'all'
-      ? allRooms
-      : allRooms.filter(room => room.type === category)
-
+    const filtered = allRooms.filter(room => {
+      const matchType = category === 'all' || room.type === category
+      const matchPrice = room.price <= maxPrice
+      return matchType && matchPrice
+    })
     setFilteredRooms(filtered)
-  }, [category])
+  }, [category, maxPrice])
 
   const handleFilter = (cat) => {
     setCategory(cat)
-    window.history.pushState({}, '', cat === 'all' ? '/rooms' : `/rooms?category=${cat}`)
+    const newUrl = cat === 'all' ? '/rooms' : `/rooms?category=${cat}`
+    window.history.pushState({}, '', newUrl)
   }
+
+  const formatPrice = (price) =>
+    `₦${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
 
   return (
     <div className="container">
@@ -75,6 +55,18 @@ const Rooms = () => {
             {cat.charAt(0).toUpperCase() + cat.slice(1)}
           </button>
         ))}
+
+        <div className="price-range">
+          <label>Max Price: {formatPrice(maxPrice)}</label>
+          <input
+            type="range"
+            min="50000"
+            max="500000"
+            step="10000"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(parseInt(e.target.value))}
+          />
+        </div>
       </div>
 
       {filteredRooms.length === 0 ? (
@@ -83,10 +75,17 @@ const Rooms = () => {
         <div className="room-grid">
           {filteredRooms.map(room => (
             <div key={room.id} className="room-card" data-aos="fade-up">
-              <img src={room.image} alt={room.name} />
+              <img src={room.images?.[0]} alt={room.name} />
               <h3>{room.name}</h3>
-              <p><strong>${room.price}</strong> / night</p>
-              <a href={`/rooms/${room.id}`} className="btn btn-outline">Book Now</a>
+              <p><strong>{formatPrice(room.price)}</strong> / night</p>
+
+              <div className="badge-wrap">
+                {room.amenities.map((a, i) => (
+                  <span key={i} className="badge">{a}</span>
+                ))}
+              </div>
+
+              <Link to={`/rooms/${room.id}`} className="btn btn-outline">View Details</Link>
             </div>
           ))}
         </div>
