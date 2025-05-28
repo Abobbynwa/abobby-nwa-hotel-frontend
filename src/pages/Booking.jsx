@@ -68,8 +68,8 @@ const Booking = () => {
             reference: data.reference,
           })
         )
-        alert(`Booking confirmed. Reference: ${data.reference}`)
-        navigate('/review')
+        // 👇 FIXED: navigate to /payment instead of /review
+        navigate('/payment')
       } else {
         alert('Booking failed: ' + data.error)
       }
