@@ -37,6 +37,10 @@ const Booking = () => {
 
     const start = new Date(formData.checkIn)
     const end = new Date(formData.checkOut)
+    if (end <= start) {
+      alert('Check-out date must be after check-in date')
+      return
+    }
     const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24))
     const total = nights * room.price
 

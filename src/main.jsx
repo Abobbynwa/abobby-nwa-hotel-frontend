@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 
@@ -15,7 +15,6 @@ AOS.init({
   duration: 1000,
   once: true, // animation runs once per element
 })
-AOS.init({ duration: 1000, once: true })
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
