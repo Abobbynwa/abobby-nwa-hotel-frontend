@@ -8,7 +8,13 @@ const Review = () => {
   const [refId, setRefId] = useState('')
 
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem('bookingData'))
+    let data
+    try {
+      data = JSON.parse(localStorage.getItem('bookingData'))
+    } catch {
+      navigate('/rooms')
+      return
+    }
     if (!data) return navigate('/rooms')
 
     // Calculate nights
@@ -21,7 +27,7 @@ const Review = () => {
 
     setRefId(ref)
     setBooking({ ...data, nights, total: nights * data.room.price })
-  }, [])
+  }, [navigate])
 
   if (!booking) return <p className="container">Fetching receipt...</p>
 

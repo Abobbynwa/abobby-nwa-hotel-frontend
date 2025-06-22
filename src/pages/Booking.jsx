@@ -27,7 +27,7 @@ const Booking = () => {
     } else {
       navigate('/rooms') // invalid ID
     }
-  }, [id])
+  }, [id, navigate])
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
