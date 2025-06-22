@@ -4,6 +4,7 @@ import AOS from 'aos'
 import 'aos/dist/aos.css'
 import '../styles/booking.css'
 import { getRoomById } from '../utils/roomData'
+import bookingService from '../services/bookingService'
 
 const Booking = () => {
   const { id } = useParams()
@@ -52,17 +53,9 @@ const Booking = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookingPayload),
-      })
+      const data = await bookingService.createBooking(bookingPayload)
 
-      const data = await res.json()
-
-      if (res.ok) {
+      if (data) {
         localStorage.setItem(
           'bookingData',
           JSON.stringify({
@@ -75,7 +68,7 @@ const Booking = () => {
         // 👇 FIXED: navigate to /payment instead of /review
         navigate('/payment')
       } else {
-        alert('Booking failed: ' + data.error)
+        alert('Booking failed')
       }
     } catch (err) {
       console.error('Booking Error:', err)

@@ -1,8 +1,9 @@
 import API from './api'
 
-const bookRoom = async (roomId, date) => {
-  const res = await API.post(`/bookings`, { roomId, date })
+// Create a booking with full payload so base URL from api.js is used
+const createBooking = async (bookingData) => {
+  const res = await API.post('/bookings', bookingData)
   return res.data
 }
 
-export default { bookRoom }
+export default { createBooking }
