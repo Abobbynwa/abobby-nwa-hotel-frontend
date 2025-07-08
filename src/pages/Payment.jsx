@@ -9,7 +9,14 @@ const Payment = () => {
   const [method, setMethod] = useState('paystack')
 
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem('bookingData'))
+    let data
+    try {
+      data = JSON.parse(localStorage.getItem('bookingData'))
+    } catch {
+      // corrupted data
+      navigate('/rooms')
+      return
+    }
     if (!data) return navigate('/rooms')
 
     // Compute duration
@@ -21,7 +28,7 @@ const Payment = () => {
     const total = room.price * nights
 
     setBooking({ ...data, room, nights, total })
-  }, [])
+  }, [navigate])
 
   const handlePayment = () => {
     alert(`Payment successful via ${method.toUpperCase()}!`)

@@ -20,8 +20,6 @@ import room4 from '../assets/room4.jpg'
 import room5 from '../assets/room5.jpg'
 import room6 from '../assets/room6.jpg'
 import room7 from '../assets/room7.jpg'
-import room8 from '../assets/room8.jpg'
-import room9 from '../assets/room9.jpg'
 
 const Home = () => {
   useEffect(() => {
