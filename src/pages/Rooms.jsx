@@ -1,53 +1,50 @@
-import React, { useEffect, useState } from 'react'
-import AOS from 'aos'
-import 'aos/dist/aos.css'
-import { useLocation, Link } from 'react-router-dom'
-import { getRoomById } from '../utils/roomData'
-import '../styles/global.css'
-import '../styles/rooms.css'
+import React, { useEffect, useState } from 'react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+import { useLocation, Link } from 'react-router-dom';
 import roomService from '../services/roomService';
-
-// 🔁 Generate 40 rooms dynamically using getRoomById()
-const allRooms = Array.from({ length: 40 }, (_, i) => getRoomById(i + 1))
+import '../styles/global.css';
+import '../styles/rooms.css';
 
 const Rooms = () => {
-  const location = useLocation()
-  const [category, setCategory] = useState('all')
-  const [maxPrice, setMaxPrice] = useState(500000)
-  const [filteredRooms, setFilteredRooms] = useState([])
+  const location = useLocation();
+  const [category, setCategory] = useState('all');
+  const [maxPrice, setMaxPrice] = useState(500000);
+  const [filteredRooms, setFilteredRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    AOS.init({ duration: 700 })
-
-    const params = new URLSearchParams(location.search)
-    const cat = params.get('category') || 'all'
-    setCategory(cat)
-  }, [location.search])
+    AOS.init({ duration: 700 });
+    const params = new URLSearchParams(location.search);
+    const cat = params.get('category') || 'all';
+    setCategory(cat);
+  }, [location.search]);
 
   useEffect(() => {
-    const filtered = allRooms.filter(room => {
-      const matchType = category === 'all' || room.type === category
-      const matchPrice = room.price <= maxPrice
-      return matchType && matchPrice
-    })
-    setFilteredRooms(filtered)
-  }, [category, maxPrice])
-useEffect(() => {
-  const fetchRooms = async () => {
-    const data = await roomService.getRooms(category, maxPrice);
-    setFilteredRooms(data.rooms || []);
-  };
-  fetchRooms();
-}, [category, maxPrice]);
+    const fetchRooms = async () => {
+      try {
+        setLoading(true);
+        const data = await roomService.getRooms(category, maxPrice);
+        setFilteredRooms(data.rooms || []);
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+        setFilteredRooms([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRooms();
+  }, [category, maxPrice]);
 
   const handleFilter = (cat) => {
-    setCategory(cat)
-    const newUrl = cat === 'all' ? '/rooms' : `/rooms?category=${cat}`
-    window.history.pushState({}, '', newUrl)
-  }
+    setCategory(cat);
+    const newUrl = cat === 'all' ? '/rooms' : `/rooms?category=${cat}`;
+    window.history.pushState({}, '', newUrl);
+  };
 
   const formatPrice = (price) =>
-    `₦${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
+    `₦${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
 
   return (
     <div className="container">
@@ -77,8 +74,10 @@ useEffect(() => {
         </div>
       </div>
 
-      {filteredRooms.length === 0 ? (
+      {loading ? (
         <p>Loading rooms...</p>
+      ) : filteredRooms.length === 0 ? (
+        <p>No rooms found matching your criteria.</p>
       ) : (
         <div className="room-grid">
           {filteredRooms.map(room => (
@@ -88,7 +87,7 @@ useEffect(() => {
               <p><strong>{formatPrice(room.price)}</strong> / night</p>
 
               <div className="badge-wrap">
-                {room.amenities.map((a, i) => (
+                {room.amenities?.map((a, i) => (
                   <span key={i} className="badge">{a}</span>
                 ))}
               </div>
@@ -99,7 +98,7 @@ useEffect(() => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Rooms
+export default Rooms;
