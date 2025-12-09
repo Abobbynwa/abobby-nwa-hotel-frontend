@@ -5,6 +5,7 @@ import { useLocation, Link } from 'react-router-dom'
 import { getRoomById } from '../utils/roomData'
 import '../styles/global.css'
 import '../styles/rooms.css'
+import roomService from '../services/roomService';
 
 // 🔁 Generate 40 rooms dynamically using getRoomById()
 const allRooms = Array.from({ length: 40 }, (_, i) => getRoomById(i + 1))
@@ -31,6 +32,13 @@ const Rooms = () => {
     })
     setFilteredRooms(filtered)
   }, [category, maxPrice])
+useEffect(() => {
+  const fetchRooms = async () => {
+    const data = await roomService.getRooms(category, maxPrice);
+    setFilteredRooms(data.rooms || []);
+  };
+  fetchRooms();
+}, [category, maxPrice]);
 
   const handleFilter = (cat) => {
     setCategory(cat)
