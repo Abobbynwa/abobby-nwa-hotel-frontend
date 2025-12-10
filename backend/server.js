@@ -22,15 +22,15 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://localhost:3000',
-    process.env.FRONTEND_URL
+    process.env.FRONTEND_URL || '*'
   ],
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static admin dashboard
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files for admin dashboard
+app.use('/admin-assets', express.static(path.join(__dirname, 'public')));
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -43,11 +43,17 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// Serve admin.js
+app.get('/admin.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.js'));
+});
+
 // Health check
-app.get('/', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({ 
     message: '🏨 Abobby Hotel API is running!',
     status: 'healthy',
+    timestamp: new Date().toISOString(),
     endpoints: {
       auth: '/api/auth',
       rooms: '/api/rooms',
@@ -58,15 +64,33 @@ app.get('/', (req, res) => {
   });
 });
 
-// 404 handler
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    message: '🏨 Welcome to Abobby Hotel API',
+    status: 'healthy',
+    endpoints: {
+      api: '/api/health',
+      admin: '/admin',
+      docs: 'https://github.com/yourusername/abobby-hotel-backend'
+    }
+  });
+});
+
+// 404 handler for undefined routes
 app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+  res.status(404).json({ 
+    success: false,
+    message: 'Route not found',
+    path: req.path
+  });
 });
 
 // Error handler
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(500).json({ 
+    success: false,
     message: 'Server error',
     error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
   });
@@ -77,5 +101,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Admin Dashboard: http://localhost:${PORT}/admin`);
-  console.log(`🌐 API Docs: http://localhost:${PORT}/`);
+  console.log(`🌐 API Health: http://localhost:${PORT}/api/health`);
+  console.log(`🔌 API Base: http://localhost:${PORT}/api`);
 });
