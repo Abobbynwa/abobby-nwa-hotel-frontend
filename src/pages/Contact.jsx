@@ -1,18 +1,29 @@
 import React, { useState } from 'react'
+import API from '../services/api'
 import '../styles/contact.css'
 
 const Contact = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' })
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Contact form submitted:', formData)
-    alert('Thanks for contacting us! We’ll be in touch.')
-    setFormData({ name: '', email: '', message: '' })
+    setLoading(true)
+
+    try {
+      await API.post('/contact', formData)
+      alert('Thanks for contacting us! We’ll be in touch.')
+      setFormData({ name: '', email: '', message: '' })
+    } catch (error) {
+      console.error('Contact form error:', error)
+      alert('Message failed to send. Please try again or contact us on WhatsApp.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -43,7 +54,9 @@ const Contact = () => {
           value={formData.message}
           onChange={handleChange}
         />
-        <button type="submit" className="btn btn-glow">Send Message</button>
+        <button type="submit" className="btn btn-glow" disabled={loading}>
+          {loading ? 'Sending...' : 'Send Message'}
+        </button>
       </form>
     </div>
   )
