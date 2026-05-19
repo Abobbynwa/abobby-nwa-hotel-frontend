@@ -8,19 +8,21 @@ import RoomDetail from './pages/RoomDetail'
 import About from './pages/About'
 import Booking from './pages/Booking'
 import Payment from './pages/Payment'
+import PaymentVerify from './pages/PaymentVerify'
 import Review from './pages/Review'
 
 const Router = () => (
   <Routes>
     <Route path="/" element={<Home />} />
     <Route path="/rooms" element={<Rooms />} />
-    <Route path="*" element={<NotFound />} />
     <Route path="/contact" element={<Contact />} />
     <Route path="/rooms/:id" element={<RoomDetail />} />
     <Route path="/about" element={<About />} />
     <Route path="/booking/:id" element={<Booking />} />
     <Route path="/payment" element={<Payment />} />
+    <Route path="/payment/verify" element={<PaymentVerify />} />
     <Route path="/review" element={<Review />} />
+    <Route path="*" element={<NotFound />} />
   </Routes>
 )
 
