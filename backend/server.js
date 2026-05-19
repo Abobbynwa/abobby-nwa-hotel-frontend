@@ -9,6 +9,7 @@ import authRoutes from './routes/authRoutes.js';
 import roomRoutes from './routes/roomRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import contactRoutes from './routes/contactRoutes.js';
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Admin Dashboard Route
 app.get('/admin', (req, res) => {
@@ -59,6 +61,7 @@ app.get('/api/health', (req, res) => {
       rooms: '/api/rooms',
       bookings: '/api/bookings',
       payments: '/api/payments',
+      contact: '/api/contact',
       admin: '/admin'
     }
   });
@@ -72,7 +75,7 @@ app.get('/', (req, res) => {
     endpoints: {
       api: '/api/health',
       admin: '/admin',
-      docs: 'https://github.com/yourusername/abobby-hotel-backend'
+      docs: 'https://github.com/Abobbynwa/abobby-nwa-hotel-frontend/tree/main/backend'
     }
   });
 });
