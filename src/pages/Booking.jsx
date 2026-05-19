@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import '../styles/booking.css'
-import { getRoomById } from '../utils/roomData'
+import roomService from '../services/roomService'
 
 const Booking = () => {
   const { id } = useParams()
@@ -15,18 +15,24 @@ const Booking = () => {
     email: '',
     guests: 1,
     checkIn: '',
-    checkOut: ''
+    checkOut: '',
   })
 
   useEffect(() => {
     AOS.init({ duration: 600 })
-    const fetchedRoom = getRoomById(parseInt(id))
-    if (fetchedRoom) {
-      setRoom(fetchedRoom)
-    } else {
-      navigate('/rooms') // invalid ID
+
+    const fetchRoom = async () => {
+      try {
+        const data = await roomService.getRoom(id)
+        setRoom(data.room)
+      } catch (error) {
+        console.error('Error loading room:', error)
+        navigate('/rooms')
+      }
     }
-  }, [id])
+
+    fetchRoom()
+  }, [id, navigate])
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -38,6 +44,12 @@ const Booking = () => {
     const start = new Date(formData.checkIn)
     const end = new Date(formData.checkOut)
     const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24))
+
+    if (nights <= 0) {
+      alert('Check-out date must be after check-in date')
+      return
+    }
+
     const total = nights * room.price
 
     const bookingPayload = {
@@ -48,7 +60,7 @@ const Booking = () => {
     }
 
     try {
-const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bookings`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,10 +80,10 @@ const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bookings`, {
             reference: data.reference,
           })
         )
-        // 👇 FIXED: navigate to /payment instead of /review
+
         navigate('/payment')
       } else {
-        alert('Booking failed: ' + data.error)
+        alert('Booking failed: ' + (data.error || 'Unknown error'))
       }
     } catch (err) {
       console.error('Booking Error:', err)
