@@ -4,16 +4,66 @@ const generateReference = () => {
   return `ABH-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 };
 
+const ensureGuestColumns = async () => {
+  await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS phone VARCHAR(50);`);
+  await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS gender VARCHAR(50);`);
+  await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS next_of_kin_name VARCHAR(255);`);
+  await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS next_of_kin_phone VARCHAR(50);`);
+};
+
 export const createBooking = async (req, res) => {
   try {
-    const { fullName, email, roomId, roomType, checkIn, checkOut, guests, total } = req.body;
+    await ensureGuestColumns();
+
+    const {
+      fullName,
+      email,
+      phone,
+      gender,
+      nextOfKinName,
+      nextOfKinPhone,
+      roomId,
+      roomType,
+      checkIn,
+      checkOut,
+      guests,
+      total
+    } = req.body;
 
     const reference = generateReference();
 
     const result = await pool.query(
-      `INSERT INTO bookings (reference, full_name, email, room_id, room_type, check_in, check_out, guests, total) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [reference, fullName, email, roomId, roomType, checkIn, checkOut, guests, total]
+      `INSERT INTO bookings (
+        reference,
+        full_name,
+        email,
+        phone,
+        gender,
+        next_of_kin_name,
+        next_of_kin_phone,
+        room_id,
+        room_type,
+        check_in,
+        check_out,
+        guests,
+        total
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      RETURNING *`,
+      [
+        reference,
+        fullName,
+        email,
+        phone,
+        gender,
+        nextOfKinName || null,
+        nextOfKinPhone || null,
+        roomId,
+        roomType,
+        checkIn,
+        checkOut,
+        guests,
+        total
+      ]
     );
 
     res.status(201).json({
@@ -29,6 +79,8 @@ export const createBooking = async (req, res) => {
 
 export const getBookings = async (req, res) => {
   try {
+    await ensureGuestColumns();
+
     const result = await pool.query(`
       SELECT b.*, r.name as room_name, r.type as room_type, r.images as room_images
       FROM bookings b
@@ -49,6 +101,8 @@ export const getBookings = async (req, res) => {
 
 export const getBooking = async (req, res) => {
   try {
+    await ensureGuestColumns();
+
     const result = await pool.query(
       'SELECT * FROM bookings WHERE reference = $1',
       [req.params.reference]
