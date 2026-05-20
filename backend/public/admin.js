@@ -178,21 +178,32 @@ const loadBookings = async () => {
     return;
   }
 
-  bookingsTable.innerHTML = bookings.map((booking) => `
-    <tr>
-      <td>${escapeHtml(booking.reference)}</td>
-      <td>${escapeHtml(booking.full_name)}<br><span class="muted">${escapeHtml(booking.email)}</span></td>
-      <td>${escapeHtml(booking.room_name || booking.room_type || '-')}</td>
-      <td>${escapeHtml(booking.check_in || '-')}<br>${escapeHtml(booking.check_out || '-')}</td>
-      <td>${formatCurrency(booking.total)}</td>
-      <td><span class="pill ${booking.status}">${escapeHtml(booking.status)}</span></td>
-      <td><span class="pill ${booking.payment_status}">${escapeHtml(booking.payment_status)}</span></td>
-      <td>
-        <button class="success" onclick="updateBooking(${booking.id}, 'confirmed', '${booking.payment_status}')">Confirm</button>
-        <button class="danger" onclick="updateBooking(${booking.id}, 'cancelled', '${booking.payment_status}')">Cancel</button>
-      </td>
-    </tr>
-  `).join('');
+  bookingsTable.innerHTML = bookings.map((booking) => {
+    const proof = booking.payment_proof
+      ? `<br><a href="${booking.payment_proof}" target="_blank"><img src="${booking.payment_proof}" style="width:80px;height:60px;object-fit:cover;border-radius:8px;margin-top:6px;" /></a>`
+      : '<br><span class="muted">No proof</span>';
+
+    const method = booking.payment_method === 'bank_transfer'
+      ? `Transfer<br><span class="muted">${escapeHtml(booking.transfer_bank || 'Opay / Palmpay / Moniepoint')}</span>${proof}`
+      : (booking.payment_method || 'Paystack/None');
+
+    return `
+      <tr>
+        <td>${escapeHtml(booking.reference)}</td>
+        <td>${escapeHtml(booking.full_name)}<br><span class="muted">${escapeHtml(booking.email)}</span></td>
+        <td>${escapeHtml(booking.room_name || booking.room_type || '-')}</td>
+        <td>${escapeHtml(booking.check_in || '-')}<br>${escapeHtml(booking.check_out || '-')}</td>
+        <td>${formatCurrency(booking.total)}</td>
+        <td><span class="pill ${booking.status}">${escapeHtml(booking.status)}</span></td>
+        <td><span class="pill ${booking.payment_status}">${escapeHtml(booking.payment_status)}</span><br>${method}</td>
+        <td>
+          <button class="success" onclick="updateBooking(${booking.id}, 'confirmed', 'paid')">Mark Paid</button>
+          <button class="warning" onclick="updateBooking(${booking.id}, 'confirmed', '${booking.payment_status}')">Confirm</button>
+          <button class="danger" onclick="updateBooking(${booking.id}, 'cancelled', '${booking.payment_status}')">Cancel</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 };
 
 window.editRoom = (id) => {
