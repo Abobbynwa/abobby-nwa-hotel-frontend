@@ -3,6 +3,7 @@ const tokenKey = 'abobby_admin_token';
 const userKey = 'abobby_admin_user';
 
 let roomCache = [];
+let contactCache = [];
 
 const loginSection = document.getElementById('loginSection');
 const dashboardSection = document.getElementById('dashboardSection');
@@ -66,12 +67,50 @@ const apiRequest = async (path, options = {}) => {
   return data;
 };
 
+const ensureContactSection = () => {
+  if (document.getElementById('contactSection')) return;
+
+  const section = document.createElement('section');
+  section.id = 'contactSection';
+  section.className = 'card';
+  section.innerHTML = `
+    <div class="section-title">
+      <h2>Contact Messages</h2>
+      <button id="refreshContactsBtn">Refresh Messages</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Subject</th>
+            <th>Message</th>
+            <th>Status</th>
+            <th>Reply</th>
+          </tr>
+        </thead>
+        <tbody id="contactsTable"></tbody>
+      </table>
+    </div>
+  `;
+
+  const firstRoomSection = document.getElementById('roomEditorCard');
+  if (firstRoomSection && firstRoomSection.parentNode) {
+    firstRoomSection.parentNode.insertBefore(section, firstRoomSection);
+  } else {
+    dashboardSection.appendChild(section);
+  }
+
+  document.getElementById('refreshContactsBtn').addEventListener('click', loadContacts);
+};
+
 const showDashboard = () => {
   const user = JSON.parse(localStorage.getItem(userKey) || 'null');
   loginSection.classList.add('hidden');
   dashboardSection.classList.remove('hidden');
   logoutBtn.classList.remove('hidden');
   adminUser.textContent = user ? `${user.name} (${user.email})` : 'Admin';
+  ensureContactSection();
 };
 
 const showLogin = () => {
@@ -215,6 +254,68 @@ const loadBookings = async () => {
   }).join('');
 };
 
+const loadContacts = async () => {
+  ensureContactSection();
+  const contactsTable = document.getElementById('contactsTable');
+  if (!contactsTable) return;
+
+  contactsTable.innerHTML = '<tr><td colspan="5">Loading contact messages...</td></tr>';
+
+  try {
+    const data = await apiRequest('/contact');
+    contactCache = data.messages || [];
+
+    if (!contactCache.length) {
+      contactsTable.innerHTML = '<tr><td colspan="5">No contact messages yet.</td></tr>';
+      return;
+    }
+
+    contactsTable.innerHTML = contactCache.map((item) => `
+      <tr>
+        <td>
+          ${escapeHtml(item.name)}<br>
+          <span class="muted">${escapeHtml(item.email)}</span><br>
+          <span class="muted">${escapeHtml(item.phone || 'No phone')}</span>
+        </td>
+        <td>${escapeHtml(item.subject || 'Contact Message')}</td>
+        <td>
+          ${escapeHtml(item.message)}
+          ${item.admin_reply ? `<br><br><strong>Admin Reply:</strong><br><span class="muted">${escapeHtml(item.admin_reply)}</span>` : ''}
+        </td>
+        <td><span class="pill ${item.status === 'replied' ? 'paid' : 'pending'}">${escapeHtml(item.status || 'new')}</span></td>
+        <td>
+          <textarea id="contactReply-${item.id}" placeholder="Type reply..." rows="4" style="width:220px;padding:8px;border-radius:8px;">${escapeHtml(item.admin_reply || '')}</textarea>
+          <br>
+          <button class="success" style="margin-top:8px;" onclick="replyContact(${item.id})">Send Reply</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (error) {
+    contactsTable.innerHTML = `<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`;
+  }
+};
+
+window.replyContact = async (id) => {
+  const textarea = document.getElementById(`contactReply-${id}`);
+  const replyMessage = textarea?.value?.trim();
+
+  if (!replyMessage) {
+    alert('Please type a reply first.');
+    return;
+  }
+
+  try {
+    await apiRequest(`/contact/${id}/reply`, {
+      method: 'POST',
+      body: JSON.stringify({ replyMessage })
+    });
+    alert('Reply sent successfully if email service is active.');
+    await loadContacts();
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
 window.editRoom = (id) => {
   const room = roomCache.find((item) => Number(item.id) === Number(id));
   if (!room) return alert('Room not found');
@@ -262,7 +363,8 @@ window.updateBooking = async (id, status, paymentStatus) => {
 
 const loadDashboard = async () => {
   try {
-    await Promise.all([loadRooms(), loadBookings()]);
+    ensureContactSection();
+    await Promise.all([loadRooms(), loadBookings(), loadContacts()]);
   } catch (error) {
     alert(error.message);
     if (error.message.toLowerCase().includes('not authorized')) {
