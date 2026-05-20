@@ -18,13 +18,27 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://abobby-nwa-hotel-frontend.vercel.app',
+  'https://abobby-nwa-hotel-frontend-3v5j.vercel.app',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 // Middleware
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    process.env.FRONTEND_URL || '*'
-  ],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+
+    const isAllowed =
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app');
+
+    if (isAllowed) return callback(null, true);
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
   credentials: true
 }));
 app.use(express.json());
