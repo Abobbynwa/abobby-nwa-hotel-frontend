@@ -1,13 +1,9 @@
 import pool from '../config/db.js';
 
-// Generate booking reference
 const generateReference = () => {
   return `ABH-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 };
 
-// @desc    Create booking
-// @route   POST /api/bookings
-// @access  Public
 export const createBooking = async (req, res) => {
   try {
     const { fullName, email, roomId, roomType, checkIn, checkOut, guests, total } = req.body;
@@ -31,9 +27,6 @@ export const createBooking = async (req, res) => {
   }
 };
 
-// @desc    Get all bookings (Admin)
-// @route   GET /api/bookings
-// @access  Private/Admin
 export const getBookings = async (req, res) => {
   try {
     const result = await pool.query(`
@@ -54,9 +47,6 @@ export const getBookings = async (req, res) => {
   }
 };
 
-// @desc    Get booking by reference
-// @route   GET /api/bookings/:reference
-// @access  Public
 export const getBooking = async (req, res) => {
   try {
     const result = await pool.query(
@@ -78,9 +68,6 @@ export const getBooking = async (req, res) => {
   }
 };
 
-// @desc    Update booking status
-// @route   PATCH /api/bookings/:id
-// @access  Private/Admin
 export const updateBooking = async (req, res) => {
   try {
     const { status, payment_status } = req.body;
@@ -101,5 +88,56 @@ export const updateBooking = async (req, res) => {
   } catch (error) {
     console.error('Update booking error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+export const submitTransferProof = async (req, res) => {
+  try {
+    const { reference, paymentProof, paymentNote } = req.body;
+
+    if (!reference || !paymentProof) {
+      return res.status(400).json({
+        success: false,
+        message: 'Booking reference and payment proof are required'
+      });
+    }
+
+    const result = await pool.query(
+      `UPDATE bookings
+       SET payment_method = $1,
+           payment_status = $2,
+           status = $3,
+           transfer_bank = $4,
+           transfer_account_name = $5,
+           transfer_account_number = $6,
+           payment_proof = $7,
+           payment_note = $8
+       WHERE reference = $9
+       RETURNING *`,
+      [
+        'bank_transfer',
+        'pending_review',
+        'pending',
+        'Opay / Palmpay / Moniepoint',
+        'Valentine Agaba',
+        '8149642220',
+        paymentProof,
+        paymentNote || '',
+        reference
+      ]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Transfer proof submitted successfully. Admin will review your payment.',
+      booking: result.rows[0]
+    });
+  } catch (error) {
+    console.error('Submit transfer proof error:', error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
