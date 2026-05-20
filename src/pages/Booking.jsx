@@ -4,12 +4,14 @@ import AOS from 'aos'
 import 'aos/dist/aos.css'
 import '../styles/booking.css'
 import roomService from '../services/roomService'
+import API from '../services/api'
 
 const Booking = () => {
   const { id } = useParams()
   const navigate = useNavigate()
 
   const [room, setRoom] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -60,34 +62,26 @@ const Booking = () => {
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bookings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookingPayload),
-      })
+      setSubmitting(true)
+      const { data } = await API.post('/bookings', bookingPayload)
 
-      const data = await res.json()
+      localStorage.setItem(
+        'bookingData',
+        JSON.stringify({
+          ...formData,
+          room,
+          total,
+          reference: data.reference,
+        })
+      )
 
-      if (res.ok) {
-        localStorage.setItem(
-          'bookingData',
-          JSON.stringify({
-            ...formData,
-            room,
-            total,
-            reference: data.reference,
-          })
-        )
-
-        navigate('/payment')
-      } else {
-        alert('Booking failed: ' + (data.error || 'Unknown error'))
-      }
+      navigate('/payment')
     } catch (err) {
       console.error('Booking Error:', err)
-      alert('Something went wrong')
+      const message = err.response?.data?.message || err.response?.data?.error || err.message || 'Something went wrong'
+      alert('Booking failed: ' + message)
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -143,7 +137,9 @@ const Booking = () => {
           required
         />
 
-        <button type="submit" className="btn btn-glow">Proceed to Payment</button>
+        <button type="submit" className="btn btn-glow" disabled={submitting}>
+          {submitting ? 'Creating Booking...' : 'Proceed to Payment'}
+        </button>
       </form>
     </div>
   )
