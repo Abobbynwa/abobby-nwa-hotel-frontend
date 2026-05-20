@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import API from '../services/api';
 import '../styles/payment.css';
 
 const Payment = () => {
@@ -18,27 +18,27 @@ const Payment = () => {
     const total = data.room.price * nights;
 
     setBooking({ ...data, nights, total });
-  }, []);
+  }, [navigate]);
 
   const handlePayment = async () => {
     try {
       setProcessing(true);
-      
-      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/payments/initialize`, {
+
+      const res = await API.post('/payments/initialize', {
         bookingReference: booking.reference,
         email: booking.email,
         amount: booking.total
       });
 
-      if (res.data.success) {
-        // Redirect to Paystack
+      if (res.data.success && res.data.authorizationUrl) {
         window.location.href = res.data.authorizationUrl;
       } else {
-        alert('Payment initialization failed');
+        alert(res.data.message || 'Payment initialization failed');
       }
     } catch (error) {
       console.error('Payment error:', error);
-      alert('Payment failed. Please try again.');
+      const message = error.response?.data?.message || error.response?.data?.error?.message || error.message || 'Payment failed. Please try again.';
+      alert('Payment failed: ' + message);
     } finally {
       setProcessing(false);
     }
@@ -61,8 +61,8 @@ const Payment = () => {
         <p><strong>Total:</strong> ₦{room.price.toLocaleString()} x {nights} = <b>₦{total.toLocaleString()}</b></p>
       </div>
 
-      <button 
-        className="btn btn-glow" 
+      <button
+        className="btn btn-glow"
         onClick={handlePayment}
         disabled={processing}
       >
