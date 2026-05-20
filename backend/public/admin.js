@@ -187,10 +187,19 @@ const loadBookings = async () => {
       ? `Transfer<br><span class="muted">${escapeHtml(booking.transfer_bank || 'Opay / Palmpay / Moniepoint')}</span>${proof}`
       : (booking.payment_method || 'Paystack/None');
 
+    const guestDetails = `
+      ${escapeHtml(booking.full_name)}<br>
+      <span class="muted">${escapeHtml(booking.email)}</span><br>
+      <span class="muted">Phone: ${escapeHtml(booking.phone || '-')}</span><br>
+      <span class="muted">Gender: ${escapeHtml(booking.gender || '-')}</span><br>
+      <span class="muted">Next of Kin: ${escapeHtml(booking.next_of_kin_name || '-')}</span><br>
+      <span class="muted">NOK Phone: ${escapeHtml(booking.next_of_kin_phone || '-')}</span>
+    `;
+
     return `
       <tr>
         <td>${escapeHtml(booking.reference)}</td>
-        <td>${escapeHtml(booking.full_name)}<br><span class="muted">${escapeHtml(booking.email)}</span></td>
+        <td>${guestDetails}</td>
         <td>${escapeHtml(booking.room_name || booking.room_type || '-')}</td>
         <td>${escapeHtml(booking.check_in || '-')}<br>${escapeHtml(booking.check_out || '-')}</td>
         <td>${formatCurrency(booking.total)}</td>
