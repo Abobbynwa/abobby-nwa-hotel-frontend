@@ -15,6 +15,10 @@ const Booking = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
+    phone: '',
+    gender: '',
+    nextOfKinName: '',
+    nextOfKinPhone: '',
     guests: 1,
     checkIn: '',
     checkOut: '',
@@ -103,36 +107,82 @@ const Booking = () => {
           type="text"
           name="fullName"
           placeholder="Full Name"
+          value={formData.fullName}
           onChange={handleChange}
           required
         />
+
         <input
           type="email"
           name="email"
           placeholder="Email Address"
+          value={formData.email}
           onChange={handleChange}
           required
         />
+
+        <input
+          type="tel"
+          name="phone"
+          placeholder="Phone Number"
+          value={formData.phone}
+          onChange={handleChange}
+          required
+        />
+
+        <select
+          name="gender"
+          value={formData.gender}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <input
+          type="text"
+          name="nextOfKinName"
+          placeholder="Next of Kin Name (Optional)"
+          value={formData.nextOfKinName}
+          onChange={handleChange}
+        />
+
+        <input
+          type="tel"
+          name="nextOfKinPhone"
+          placeholder="Next of Kin Phone Number (Optional)"
+          value={formData.nextOfKinPhone}
+          onChange={handleChange}
+        />
+
         <input
           type="number"
           name="guests"
           min={1}
           max={6}
           placeholder="Number of Guests"
+          value={formData.guests}
           onChange={handleChange}
           required
         />
+
         <label>Check-in Date:</label>
         <input
           type="date"
           name="checkIn"
+          value={formData.checkIn}
           onChange={handleChange}
           required
         />
+
         <label>Check-out Date:</label>
         <input
           type="date"
           name="checkOut"
+          value={formData.checkOut}
           onChange={handleChange}
           required
         />
