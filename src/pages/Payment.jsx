@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import '../styles/payment.css';
@@ -6,20 +6,28 @@ import '../styles/payment.css';
 const BANK_DETAILS = {
   accountNumber: '8149642220',
   accountName: 'Valentine Agaba',
-  banks: 'Opay, Palmpay, Moniepoint'
+  banks: ['Opay', 'Palmpay', 'Moniepoint']
 };
 
 const Payment = () => {
   const navigate = useNavigate();
+
   const [booking, setBooking] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('transfer');
   const [paymentProof, setPaymentProof] = useState('');
   const [paymentNote, setPaymentNote] = useState('');
 
+  const [selectedBank, setSelectedBank] = useState('Opay');
+  const [secondsLeft, setSecondsLeft] = useState(120);
+
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem('bookingData'));
-    if (!data) return navigate('/rooms');
+
+    if (!data) {
+      navigate('/rooms');
+      return;
+    }
 
     const start = new Date(data.checkIn);
     const end = new Date(data.checkOut);
@@ -28,6 +36,43 @@ const Payment = () => {
 
     setBooking({ ...data, nights, total });
   }, [navigate]);
+
+  const narrationCode = useMemo(() => {
+    if (!booking?.reference) return '';
+
+    const savedKey = `transfer_narration_${booking.reference}`;
+    const savedCode = sessionStorage.getItem(savedKey);
+
+    if (savedCode) return savedCode;
+
+    const uniquePart = Math.floor(1000 + Math.random() * 9000);
+    const newCode = `${booking.reference}-${uniquePart}`;
+
+    sessionStorage.setItem(savedKey, newCode);
+
+    return newCode;
+  }, [booking?.reference]);
+
+  useEffect(() => {
+    if (!booking || paymentMethod !== 'transfer') return undefined;
+
+    setSecondsLeft(120);
+
+    const timer = setInterval(() => {
+      setSecondsLeft((current) => {
+        if (current <= 1) {
+          clearInterval(timer);
+          sessionStorage.removeItem(`transfer_narration_${booking.reference}`);
+          window.location.reload();
+          return 0;
+        }
+
+        return current - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [booking, paymentMethod]);
 
   const handlePaystackPayment = async () => {
     try {
@@ -46,7 +91,13 @@ const Payment = () => {
       }
     } catch (error) {
       console.error('Payment error:', error);
-      const message = error.response?.data?.message || error.response?.data?.error?.message || error.message || 'Payment failed. Please try again.';
+
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error?.message ||
+        error.message ||
+        'Payment failed. Please try again.';
+
       alert('Payment failed: ' + message);
     } finally {
       setProcessing(false);
@@ -55,6 +106,7 @@ const Payment = () => {
 
   const handleProofUpload = (event) => {
     const file = event.target.files?.[0];
+
     if (!file) return;
 
     if (file.size > 900000) {
@@ -64,11 +116,20 @@ const Payment = () => {
     }
 
     const reader = new FileReader();
-    reader.onload = () => setPaymentProof(reader.result);
+
+    reader.onload = () => {
+      setPaymentProof(reader.result);
+    };
+
     reader.readAsDataURL(file);
   };
 
   const handleTransferSubmit = async () => {
+    if (!selectedBank) {
+      alert('Please select the bank or wallet you used.');
+      return;
+    }
+
     if (!paymentProof) {
       alert('Please upload payment evidence before submitting.');
       return;
@@ -77,52 +138,107 @@ const Payment = () => {
     try {
       setProcessing(true);
 
+      const fullPaymentNote = [
+        `Selected Bank/Wallet: ${selectedBank}`,
+        `Unique Narration: ${narrationCode}`,
+        paymentNote ? `Customer Note: ${paymentNote}` : ''
+      ]
+        .filter(Boolean)
+        .join(' | ');
+
       const res = await API.post('/bookings/transfer-proof', {
         reference: booking.reference,
         paymentProof,
-        paymentNote
+        paymentNote: fullPaymentNote
       });
 
       if (res.data.success) {
-        localStorage.setItem('bookingData', JSON.stringify({
-          ...booking,
-          paymentMethod: 'bank_transfer',
-          paymentStatus: 'pending_review'
-        }));
-        alert('Payment evidence submitted successfully. Admin will review and confirm your booking.');
+        localStorage.setItem(
+          'bookingData',
+          JSON.stringify({
+            ...booking,
+            paymentMethod: 'bank_transfer',
+            paymentStatus: 'pending_review',
+            selectedBank,
+            narrationCode
+          })
+        );
+
+        alert(
+          'Payment evidence submitted successfully. Admin will review and confirm your booking.'
+        );
+
         navigate('/review');
       } else {
         alert(res.data.message || 'Unable to submit payment evidence.');
       }
     } catch (error) {
       console.error('Transfer proof error:', error);
-      const message = error.response?.data?.message || error.message || 'Unable to submit evidence.';
+
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        'Unable to submit evidence.';
+
       alert('Transfer evidence failed: ' + message);
     } finally {
       setProcessing(false);
     }
   };
 
-  if (!booking) return <p className="container">Loading payment info...</p>;
+  if (!booking) {
+    return <p className="container">Loading payment info...</p>;
+  }
 
-  const { room, fullName, email, guests, checkIn, checkOut, nights, total } = booking;
+  const {
+    room,
+    fullName,
+    email,
+    guests,
+    checkIn,
+    checkOut,
+    nights,
+    total
+  } = booking;
 
   return (
     <div className="container">
       <h2>💳 Payment</h2>
 
       <div className="payment-summary">
-        <img src={room.images?.[0]} alt={room.name} style={{ maxWidth: 400, borderRadius: 8 }} />
+        <img
+          src={room.images?.[0]}
+          alt={room.name}
+          style={{ maxWidth: 400, borderRadius: 8 }}
+        />
+
         <h3>{room.name}</h3>
-        <p><strong>Guest:</strong> {fullName} ({email})</p>
-        <p><strong>Guests:</strong> {guests}</p>
-        <p><strong>Stay:</strong> {checkIn} → {checkOut} ({nights} nights)</p>
-        <p><strong>Booking Reference:</strong> {booking.reference}</p>
-        <p><strong>Total:</strong> ₦{room.price.toLocaleString()} x {nights} = <b>₦{total.toLocaleString()}</b></p>
+
+        <p>
+          <strong>Guest:</strong> {fullName} ({email})
+        </p>
+
+        <p>
+          <strong>Guests:</strong> {guests}
+        </p>
+
+        <p>
+          <strong>Stay:</strong> {checkIn} → {checkOut} ({nights} nights)
+        </p>
+
+        <p>
+          <strong>Booking Reference:</strong> {booking.reference}
+        </p>
+
+        <p>
+          <strong>Total:</strong> ₦{room.price.toLocaleString()} x {nights} ={' '}
+          <b>₦{total.toLocaleString()}</b>
+        </p>
       </div>
 
       <div className="payment-summary" style={{ marginTop: 20 }}>
         <h3>Choose Payment Method</h3>
+
         <label style={{ display: 'block', marginBottom: 10 }}>
           <input
             type="radio"
@@ -131,8 +247,9 @@ const Payment = () => {
             checked={paymentMethod === 'transfer'}
             onChange={() => setPaymentMethod('transfer')}
           />{' '}
-          Bank Transfer / Opay / Palmpay / Moniepoint
+          Bank Transfer / Wallet Transfer
         </label>
+
         <label style={{ display: 'block' }}>
           <input
             type="radio"
@@ -148,28 +265,85 @@ const Payment = () => {
       {paymentMethod === 'transfer' && (
         <div className="payment-summary" style={{ marginTop: 20 }}>
           <h3>Bank Transfer Details</h3>
-          <p><strong>Account Number:</strong> {BANK_DETAILS.accountNumber}</p>
-          <p><strong>Bank Name:</strong> {BANK_DETAILS.banks}</p>
-          <p><strong>Account Name:</strong> {BANK_DETAILS.accountName}</p>
-          <p><strong>Amount:</strong> ₦{total.toLocaleString()}</p>
-          <p><strong>Use your booking reference as narration:</strong> {booking.reference}</p>
 
-          <label><strong>Upload Payment Evidence</strong></label>
+          <p>
+            <strong>Account Number:</strong> {BANK_DETAILS.accountNumber}
+          </p>
+
+          <p>
+            <strong>Account Name:</strong> {BANK_DETAILS.accountName}
+          </p>
+
+          <label>
+            <strong>Select Bank / Wallet Used</strong>
+          </label>
+
+          <select
+            value={selectedBank}
+            onChange={(e) => setSelectedBank(e.target.value)}
+            style={{
+              width: '100%',
+              padding: 10,
+              borderRadius: 8,
+              marginTop: 8,
+              marginBottom: 12
+            }}
+          >
+            {BANK_DETAILS.banks.map((bank) => (
+              <option key={bank} value={bank}>
+                {bank}
+              </option>
+            ))}
+          </select>
+
+          <p>
+            <strong>Amount:</strong> ₦{total.toLocaleString()}
+          </p>
+
+          <p>
+            <strong>Use this unique narration:</strong>{' '}
+            <b>{narrationCode}</b>
+          </p>
+
+          <p>
+            <strong>Time left:</strong> {secondsLeft}s
+          </p>
+
+          <p style={{ color: '#b45309', fontWeight: 600 }}>
+            This transfer session refreshes after 120 seconds so each customer
+            gets a unique narration.
+          </p>
+
+          <label>
+            <strong>Upload Payment Evidence</strong>
+          </label>
+
           <input type="file" accept="image/*" onChange={handleProofUpload} />
 
           {paymentProof && (
             <div style={{ marginTop: 12 }}>
-              <img src={paymentProof} alt="Payment proof preview" style={{ maxWidth: 260, borderRadius: 8 }} />
+              <img
+                src={paymentProof}
+                alt="Payment proof preview"
+                style={{ maxWidth: 260, borderRadius: 8 }}
+              />
             </div>
           )}
 
-          <label style={{ display: 'block', marginTop: 12 }}><strong>Optional Note</strong></label>
+          <label style={{ display: 'block', marginTop: 12 }}>
+            <strong>Optional Note</strong>
+          </label>
+
           <textarea
             value={paymentNote}
             onChange={(e) => setPaymentNote(e.target.value)}
             placeholder="Example: I transferred from my Opay account by 2:30pm"
             rows={4}
-            style={{ width: '100%', padding: 10, borderRadius: 8 }}
+            style={{
+              width: '100%',
+              padding: 10,
+              borderRadius: 8
+            }}
           />
 
           <button
