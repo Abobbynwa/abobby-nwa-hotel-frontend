@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { sendTransferEvidenceConfirmation } from '../utils/emailService.js';
 
 const generateReference = () => {
   return `ABH-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
@@ -185,10 +186,20 @@ export const submitTransferProof = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Booking not found' });
     }
 
+    let emailConfirmation = { sent: false };
+
+    try {
+      emailConfirmation = await sendTransferEvidenceConfirmation(result.rows[0]);
+    } catch (emailError) {
+      console.error('Customer confirmation email error:', emailError.message);
+      emailConfirmation = { sent: false, reason: emailError.message };
+    }
+
     res.json({
       success: true,
       message: 'Transfer proof submitted successfully. Admin will review your payment.',
-      booking: result.rows[0]
+      booking: result.rows[0],
+      emailConfirmation
     });
   } catch (error) {
     console.error('Submit transfer proof error:', error);
