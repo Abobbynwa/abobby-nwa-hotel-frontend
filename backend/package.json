@@ -5,7 +5,8 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
+    "start": "node config/initDb.js && node server.js",
+    "serve": "node server.js",
     "dev": "nodemon server.js",
     "init-db": "node config/initDb.js"
   },
