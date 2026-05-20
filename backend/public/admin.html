@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abobby Hotel Admin</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #1f2937;
+    }
+    header {
+      background: #111827;
+      color: #fff;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    header h1 { margin: 0; font-size: 22px; }
+    main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    label { display: block; font-weight: 700; margin-bottom: 6px; }
+    input, textarea, select {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+    textarea { min-height: 90px; }
+    button {
+      border: 0;
+      padding: 11px 16px;
+      border-radius: 10px;
+      background: #111827;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    button.secondary { background: #4b5563; }
+    button.danger { background: #dc2626; }
+    button.success { background: #059669; }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .hidden { display: none !important; }
+    .status { margin-top: 12px; font-weight: 700; }
+    .status.error { color: #dc2626; }
+    .status.success { color: #059669; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #f9fafb; }
+    .table-wrap { overflow-x: auto; }
+    .pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .pill.paid, .pill.confirmed { background: #d1fae5; color: #047857; }
+    .pill.unpaid, .pill.pending { background: #fef3c7; color: #92400e; }
+    .pill.cancelled { background: #fee2e2; color: #991b1b; }
+    .section-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .muted { color: #6b7280; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🏨 Abobby Nwa Hotel Admin</h1>
+    <div id="adminUser" class="muted"></div>
+    <button id="logoutBtn" class="secondary hidden">Logout</button>
+  </header>
+
+  <main>
+    <section id="loginSection" class="card">
+      <h2>Admin Login</h2>
+      <form id="loginForm" class="grid">
+        <div>
+          <label for="email">Email</label>
+          <input id="email" type="email" required placeholder="admin@example.com" />
+        </div>
+        <div>
+          <label for="password">Password</label>
+          <input id="password" type="password" required placeholder="Password" />
+        </div>
+        <div style="align-self:end;">
+          <button id="loginBtn" type="submit">Login</button>
+        </div>
+      </form>
+      <div id="loginStatus" class="status"></div>
+    </section>
+
+    <section id="dashboardSection" class="hidden">
+      <div class="grid">
+        <div class="card">
+          <h3>Total Rooms</h3>
+          <h2 id="roomCount">0</h2>
+        </div>
+        <div class="card">
+          <h3>Total Bookings</h3>
+          <h2 id="bookingCount">0</h2>
+        </div>
+        <div class="card">
+          <h3>Paid Bookings</h3>
+          <h2 id="paidCount">0</h2>
+        </div>
+      </div>
+
+      <section class="card">
+        <div class="section-title">
+          <h2>Bookings</h2>
+          <button id="refreshBookingsBtn">Refresh Bookings</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Guest</th>
+                <th>Room</th>
+                <th>Stay</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Payment</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="bookingsTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">
+          <h2>Rooms</h2>
+          <button id="refreshRoomsBtn">Refresh Rooms</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Price</th>
+                <th>Capacity</th>
+                <th>Available</th>
+              </tr>
+            </thead>
+            <tbody id="roomsTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Add Room</h2>
+        <form id="roomForm">
+          <div class="grid">
+            <div>
+              <label for="roomName">Room Name</label>
+              <input id="roomName" required placeholder="Standard Room" />
+            </div>
+            <div>
+              <label for="roomType">Type</label>
+              <select id="roomType" required>
+                <option value="standard">Standard</option>
+                <option value="deluxe">Deluxe</option>
+                <option value="executive">Executive</option>
+                <option value="presidential">Presidential</option>
+              </select>
+            </div>
+            <div>
+              <label for="roomPrice">Price</label>
+              <input id="roomPrice" type="number" required placeholder="50000" />
+            </div>
+            <div>
+              <label for="roomCapacity">Capacity</label>
+              <input id="roomCapacity" type="number" required value="2" />
+            </div>
+          </div>
+          <div style="margin-top:14px;">
+            <label for="roomDescription">Description</label>
+            <textarea id="roomDescription" required placeholder="Room description"></textarea>
+          </div>
+          <div class="grid" style="margin-top:14px;">
+            <div>
+              <label for="roomAmenities">Amenities, comma separated</label>
+              <input id="roomAmenities" placeholder="WiFi, TV, AC" />
+            </div>
+            <div>
+              <label for="roomImages">Image URLs, comma separated</label>
+              <input id="roomImages" placeholder="https://example.com/image.jpg" />
+            </div>
+          </div>
+          <div class="actions">
+            <button id="addRoomBtn" type="submit" class="success">Add Room</button>
+          </div>
+          <div id="roomStatus" class="status"></div>
+        </form>
+      </section>
+    </section>
+  </main>
+
+  <script src="/admin.js"></script>
+</body>
+</html>
