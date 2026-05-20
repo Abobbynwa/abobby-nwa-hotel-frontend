@@ -17,7 +17,6 @@ const Payment = () => {
   const [paymentMethod, setPaymentMethod] = useState('transfer');
   const [paymentProof, setPaymentProof] = useState('');
   const [paymentNote, setPaymentNote] = useState('');
-
   const [selectedBank, setSelectedBank] = useState('Opay');
   const [secondsLeft, setSecondsLeft] = useState(120);
 
@@ -126,7 +125,7 @@ const Payment = () => {
 
   const handleTransferSubmit = async () => {
     if (!selectedBank) {
-      alert('Please select the bank or wallet you used.');
+      alert('Please select Opay, Palmpay, or Moniepoint.');
       return;
     }
 
@@ -165,7 +164,7 @@ const Payment = () => {
         );
 
         alert(
-          'Payment evidence submitted successfully. Admin will review and confirm your booking.'
+          `Payment evidence submitted successfully. Admin will verify from ${selectedBank}.`
         );
 
         navigate('/review');
@@ -275,7 +274,7 @@ const Payment = () => {
           </p>
 
           <label>
-            <strong>Select Bank / Wallet Used</strong>
+            <strong>Select the bank/wallet you will transfer from</strong>
           </label>
 
           <select
@@ -297,6 +296,10 @@ const Payment = () => {
           </select>
 
           <p>
+            <strong>Admin will verify from:</strong> {selectedBank}
+          </p>
+
+          <p>
             <strong>Amount:</strong> ₦{total.toLocaleString()}
           </p>
 
@@ -310,7 +313,7 @@ const Payment = () => {
           </p>
 
           <p style={{ color: '#b45309', fontWeight: 600 }}>
-            This transfer session refreshes after 120 seconds so each customer
+            This payment session refreshes after 120 seconds so each customer
             gets a unique narration.
           </p>
 
@@ -337,7 +340,7 @@ const Payment = () => {
           <textarea
             value={paymentNote}
             onChange={(e) => setPaymentNote(e.target.value)}
-            placeholder="Example: I transferred from my Opay account by 2:30pm"
+            placeholder={`Example: I transferred from my ${selectedBank} account by 2:30pm`}
             rows={4}
             style={{
               width: '100%',
