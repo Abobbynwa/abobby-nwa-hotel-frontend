@@ -1,7 +1,11 @@
 import axios from 'axios'
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://abobby-nwa-hotel-frontend-x83e.onrender.com/api'
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
