@@ -163,9 +163,7 @@ const Payment = () => {
           })
         );
 
-        alert(
-          `Payment evidence submitted successfully. Admin will verify from ${selectedBank}.`
-        );
+        alert('Payment evidence submitted successfully. Confirmation has been sent to your email if email service is active.');
 
         navigate('/review');
       } else {
@@ -294,10 +292,6 @@ const Payment = () => {
               </option>
             ))}
           </select>
-
-          <p>
-            <strong>Admin will verify from:</strong> {selectedBank}
-          </p>
 
           <p>
             <strong>Amount:</strong> ₦{total.toLocaleString()}
