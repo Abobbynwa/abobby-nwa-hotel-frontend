@@ -2,6 +2,8 @@ const API_BASE = `${window.location.origin}/api`;
 const tokenKey = 'abobby_admin_token';
 const userKey = 'abobby_admin_user';
 
+let roomCache = [];
+
 const loginSection = document.getElementById('loginSection');
 const dashboardSection = document.getElementById('dashboardSection');
 const loginForm = document.getElementById('loginForm');
@@ -15,21 +17,31 @@ const refreshBookingsBtn = document.getElementById('refreshBookingsBtn');
 const refreshRoomsBtn = document.getElementById('refreshRoomsBtn');
 const roomForm = document.getElementById('roomForm');
 const roomStatus = document.getElementById('roomStatus');
+const roomFormTitle = document.getElementById('roomFormTitle');
+const editBanner = document.getElementById('editBanner');
+const newRoomBtn = document.getElementById('newRoomBtn');
+const cancelEditBtn = document.getElementById('cancelEditBtn');
+const imagePreview = document.getElementById('imagePreview');
+const roomImageUpload = document.getElementById('roomImageUpload');
 
 const roomCount = document.getElementById('roomCount');
 const bookingCount = document.getElementById('bookingCount');
 const paidCount = document.getElementById('paidCount');
 
-const formatCurrency = (amount) => {
-  return `₦${Number(amount || 0).toLocaleString()}`;
-};
-
+const formatCurrency = (amount) => `₦${Number(amount || 0).toLocaleString()}`;
 const getToken = () => localStorage.getItem(tokenKey);
 
 const setStatus = (element, message, type = '') => {
   element.textContent = message;
   element.className = `status ${type}`.trim();
 };
+
+const escapeHtml = (value = '') => String(value)
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#039;');
 
 const apiRequest = async (path, options = {}) => {
   const headers = {
@@ -69,26 +81,89 @@ const showLogin = () => {
   adminUser.textContent = '';
 };
 
-const loadRooms = async () => {
-  roomsTable.innerHTML = '<tr><td colspan="5">Loading rooms...</td></tr>';
-  const data = await apiRequest('/rooms');
-  const rooms = data.rooms || [];
-  roomCount.textContent = rooms.length;
+const getRoomPayload = () => ({
+  name: document.getElementById('roomName').value.trim(),
+  type: document.getElementById('roomType').value,
+  price: Number(document.getElementById('roomPrice').value),
+  capacity: Number(document.getElementById('roomCapacity').value),
+  description: document.getElementById('roomDescription').value.trim(),
+  amenities: document.getElementById('roomAmenities').value.split(',').map((item) => item.trim()).filter(Boolean),
+  images: document.getElementById('roomImages').value.split(',').map((item) => item.trim()).filter(Boolean),
+  available: document.getElementById('roomAvailable').value === 'true'
+});
 
-  if (!rooms.length) {
-    roomsTable.innerHTML = '<tr><td colspan="5">No rooms found.</td></tr>';
+const renderImagePreview = () => {
+  const urls = document.getElementById('roomImages').value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  imagePreview.innerHTML = urls.map((url) => `
+    <img class="thumb" src="${escapeHtml(url)}" alt="Room image preview" onerror="this.style.display='none'" />
+  `).join('');
+};
+
+const resetRoomForm = () => {
+  roomForm.reset();
+  document.getElementById('roomId').value = '';
+  document.getElementById('roomCapacity').value = 2;
+  document.getElementById('roomAvailable').value = 'true';
+  roomFormTitle.textContent = 'Add Room';
+  editBanner.classList.add('hidden');
+  cancelEditBtn.classList.add('hidden');
+  setStatus(roomStatus, '');
+  renderImagePreview();
+};
+
+const fillRoomForm = (room) => {
+  document.getElementById('roomId').value = room.id;
+  document.getElementById('roomName').value = room.name || '';
+  document.getElementById('roomType').value = room.type || 'standard';
+  document.getElementById('roomPrice').value = room.price || '';
+  document.getElementById('roomCapacity').value = room.capacity || 2;
+  document.getElementById('roomDescription').value = room.description || '';
+  document.getElementById('roomAmenities').value = Array.isArray(room.amenities) ? room.amenities.join(', ') : '';
+  document.getElementById('roomImages').value = Array.isArray(room.images) ? room.images.join(', ') : '';
+  document.getElementById('roomAvailable').value = String(Boolean(room.available));
+  roomFormTitle.textContent = `Edit Room #${room.id}`;
+  editBanner.textContent = `Editing: ${room.name}`;
+  editBanner.classList.remove('hidden');
+  cancelEditBtn.classList.remove('hidden');
+  renderImagePreview();
+  document.getElementById('roomEditorCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+const loadRooms = async () => {
+  roomsTable.innerHTML = '<tr><td colspan="7">Loading rooms...</td></tr>';
+  const data = await apiRequest('/rooms');
+  roomCache = data.rooms || [];
+  roomCount.textContent = roomCache.length;
+
+  if (!roomCache.length) {
+    roomsTable.innerHTML = '<tr><td colspan="7">No rooms found.</td></tr>';
     return;
   }
 
-  roomsTable.innerHTML = rooms.map((room) => `
-    <tr>
-      <td>${room.name}</td>
-      <td>${room.type}</td>
-      <td>${formatCurrency(room.price)}</td>
-      <td>${room.capacity || '-'}</td>
-      <td><span class="pill ${room.available ? 'paid' : 'cancelled'}">${room.available ? 'Available' : 'Unavailable'}</span></td>
-    </tr>
-  `).join('');
+  roomsTable.innerHTML = roomCache.map((room) => {
+    const image = Array.isArray(room.images) && room.images.length ? room.images[0] : '';
+    return `
+      <tr>
+        <td>${image ? `<img class="thumb" src="${escapeHtml(image)}" alt="${escapeHtml(room.name)}" />` : '-'}</td>
+        <td>${escapeHtml(room.name)}</td>
+        <td>${escapeHtml(room.type)}</td>
+        <td>${formatCurrency(room.price)}</td>
+        <td>${room.capacity || '-'}</td>
+        <td><span class="pill ${room.available ? 'available' : 'unavailable'}">${room.available ? 'Available' : 'Unavailable'}</span></td>
+        <td>
+          <div class="small-actions">
+            <button onclick="editRoom(${room.id})">Edit</button>
+            <button class="warning" onclick="toggleRoom(${room.id})">${room.available ? 'Disable' : 'Enable'}</button>
+            <button class="danger" onclick="deleteRoom(${room.id})">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
 };
 
 const loadBookings = async () => {
@@ -105,19 +180,52 @@ const loadBookings = async () => {
 
   bookingsTable.innerHTML = bookings.map((booking) => `
     <tr>
-      <td>${booking.reference}</td>
-      <td>${booking.full_name}<br><span class="muted">${booking.email}</span></td>
-      <td>${booking.room_name || booking.room_type || '-'}</td>
-      <td>${booking.check_in || '-'}<br>${booking.check_out || '-'}</td>
+      <td>${escapeHtml(booking.reference)}</td>
+      <td>${escapeHtml(booking.full_name)}<br><span class="muted">${escapeHtml(booking.email)}</span></td>
+      <td>${escapeHtml(booking.room_name || booking.room_type || '-')}</td>
+      <td>${escapeHtml(booking.check_in || '-')}<br>${escapeHtml(booking.check_out || '-')}</td>
       <td>${formatCurrency(booking.total)}</td>
-      <td><span class="pill ${booking.status}">${booking.status}</span></td>
-      <td><span class="pill ${booking.payment_status}">${booking.payment_status}</span></td>
+      <td><span class="pill ${booking.status}">${escapeHtml(booking.status)}</span></td>
+      <td><span class="pill ${booking.payment_status}">${escapeHtml(booking.payment_status)}</span></td>
       <td>
         <button class="success" onclick="updateBooking(${booking.id}, 'confirmed', '${booking.payment_status}')">Confirm</button>
         <button class="danger" onclick="updateBooking(${booking.id}, 'cancelled', '${booking.payment_status}')">Cancel</button>
       </td>
     </tr>
   `).join('');
+};
+
+window.editRoom = (id) => {
+  const room = roomCache.find((item) => Number(item.id) === Number(id));
+  if (!room) return alert('Room not found');
+  fillRoomForm(room);
+};
+
+window.toggleRoom = async (id) => {
+  const room = roomCache.find((item) => Number(item.id) === Number(id));
+  if (!room) return alert('Room not found');
+
+  try {
+    await apiRequest(`/rooms/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ ...room, available: !room.available })
+    });
+    await loadRooms();
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
+window.deleteRoom = async (id) => {
+  if (!confirm('Delete this room permanently?')) return;
+
+  try {
+    await apiRequest(`/rooms/${id}`, { method: 'DELETE' });
+    resetRoomForm();
+    await loadRooms();
+  } catch (error) {
+    alert(error.message);
+  }
 };
 
 window.updateBooking = async (id, status, paymentStatus) => {
@@ -179,29 +287,42 @@ logoutBtn.addEventListener('click', () => {
 
 refreshBookingsBtn.addEventListener('click', loadBookings);
 refreshRoomsBtn.addEventListener('click', loadRooms);
+newRoomBtn.addEventListener('click', resetRoomForm);
+cancelEditBtn.addEventListener('click', resetRoomForm);
+document.getElementById('roomImages').addEventListener('input', renderImagePreview);
+
+roomImageUpload.addEventListener('change', (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  if (file.size > 750000) {
+    alert('Image is too large. Use an image below 750KB or paste an image URL.');
+    event.target.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const current = document.getElementById('roomImages').value.trim();
+    document.getElementById('roomImages').value = current ? `${current}, ${reader.result}` : reader.result;
+    renderImagePreview();
+  };
+  reader.readAsDataURL(file);
+});
 
 roomForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  setStatus(roomStatus, 'Adding room...');
-
-  const payload = {
-    name: document.getElementById('roomName').value.trim(),
-    type: document.getElementById('roomType').value,
-    price: Number(document.getElementById('roomPrice').value),
-    capacity: Number(document.getElementById('roomCapacity').value),
-    description: document.getElementById('roomDescription').value.trim(),
-    amenities: document.getElementById('roomAmenities').value.split(',').map((item) => item.trim()).filter(Boolean),
-    images: document.getElementById('roomImages').value.split(',').map((item) => item.trim()).filter(Boolean)
-  };
+  const roomId = document.getElementById('roomId').value;
+  const isEditing = Boolean(roomId);
+  setStatus(roomStatus, isEditing ? 'Updating room...' : 'Adding room...');
 
   try {
-    await apiRequest('/rooms', {
-      method: 'POST',
-      body: JSON.stringify(payload)
+    await apiRequest(isEditing ? `/rooms/${roomId}` : '/rooms', {
+      method: isEditing ? 'PUT' : 'POST',
+      body: JSON.stringify(getRoomPayload())
     });
-    roomForm.reset();
-    document.getElementById('roomCapacity').value = 2;
-    setStatus(roomStatus, 'Room added successfully', 'success');
+    setStatus(roomStatus, isEditing ? 'Room updated successfully' : 'Room added successfully', 'success');
+    resetRoomForm();
     await loadRooms();
   } catch (error) {
     setStatus(roomStatus, error.message, 'error');
