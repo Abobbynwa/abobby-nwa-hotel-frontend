@@ -6,6 +6,27 @@ import '../styles/booking.css'
 import roomService from '../services/roomService'
 import API from '../services/api'
 
+const COUNTRY_CODES = [
+  { country: 'Nigeria', code: '+234' },
+  { country: 'Switzerland', code: '+41' },
+  { country: 'United States', code: '+1' },
+  { country: 'United Kingdom', code: '+44' },
+  { country: 'Canada', code: '+1' },
+  { country: 'Ghana', code: '+233' },
+  { country: 'South Africa', code: '+27' },
+  { country: 'Kenya', code: '+254' },
+  { country: 'United Arab Emirates', code: '+971' },
+  { country: 'Saudi Arabia', code: '+966' },
+  { country: 'Germany', code: '+49' },
+  { country: 'France', code: '+33' },
+  { country: 'Italy', code: '+39' },
+  { country: 'Spain', code: '+34' },
+  { country: 'India', code: '+91' },
+  { country: 'China', code: '+86' },
+  { country: 'Australia', code: '+61' },
+  { country: 'Brazil', code: '+55' }
+]
+
 const Booking = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -15,9 +36,11 @@ const Booking = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
+    phoneCountryCode: '+234',
     phone: '',
     gender: '',
     nextOfKinName: '',
+    nextOfKinCountryCode: '+234',
     nextOfKinPhone: '',
     guests: 1,
     checkIn: '',
@@ -44,6 +67,8 @@ const Booking = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  const cleanPhone = (phone) => phone.replace(/^0+/, '').replace(/\s+/g, '')
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -57,9 +82,15 @@ const Booking = () => {
     }
 
     const total = nights * room.price
+    const fullPhone = `${formData.phoneCountryCode}${cleanPhone(formData.phone)}`
+    const fullNextOfKinPhone = formData.nextOfKinPhone
+      ? `${formData.nextOfKinCountryCode}${cleanPhone(formData.nextOfKinPhone)}`
+      : ''
 
     const bookingPayload = {
       ...formData,
+      phone: fullPhone,
+      nextOfKinPhone: fullNextOfKinPhone,
       roomType: room.type,
       roomId: room.id,
       total,
@@ -73,6 +104,8 @@ const Booking = () => {
         'bookingData',
         JSON.stringify({
           ...formData,
+          phone: fullPhone,
+          nextOfKinPhone: fullNextOfKinPhone,
           room,
           total,
           reference: data.reference,
@@ -121,14 +154,30 @@ const Booking = () => {
           required
         />
 
-        <input
-          type="tel"
-          name="phone"
-          placeholder="Phone Number"
-          value={formData.phone}
-          onChange={handleChange}
-          required
-        />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <select
+            name="phoneCountryCode"
+            value={formData.phoneCountryCode}
+            onChange={handleChange}
+            required
+            style={{ maxWidth: 170 }}
+          >
+            {COUNTRY_CODES.map((item) => (
+              <option key={`${item.country}-${item.code}`} value={item.code}>
+                {item.country} {item.code}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="tel"
+            name="phone"
+            placeholder="Phone Number"
+            value={formData.phone}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
         <select
           name="gender"
@@ -150,13 +199,28 @@ const Booking = () => {
           onChange={handleChange}
         />
 
-        <input
-          type="tel"
-          name="nextOfKinPhone"
-          placeholder="Next of Kin Phone Number (Optional)"
-          value={formData.nextOfKinPhone}
-          onChange={handleChange}
-        />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <select
+            name="nextOfKinCountryCode"
+            value={formData.nextOfKinCountryCode}
+            onChange={handleChange}
+            style={{ maxWidth: 170 }}
+          >
+            {COUNTRY_CODES.map((item) => (
+              <option key={`nok-${item.country}-${item.code}`} value={item.code}>
+                {item.country} {item.code}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="tel"
+            name="nextOfKinPhone"
+            placeholder="Next of Kin Phone Number (Optional)"
+            value={formData.nextOfKinPhone}
+            onChange={handleChange}
+          />
+        </div>
 
         <input
           type="number"
