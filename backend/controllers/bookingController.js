@@ -96,7 +96,7 @@ export const getBookings = async (req, res) => {
     });
   } catch (error) {
     console.error('Get bookings error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
 
@@ -119,17 +119,32 @@ export const getBooking = async (req, res) => {
     });
   } catch (error) {
     console.error('Get booking error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
 
 export const updateBooking = async (req, res) => {
   try {
+    const bookingId = Number(req.params.id);
     const { status, payment_status } = req.body;
 
+    if (!Number.isInteger(bookingId) || bookingId <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid booking ID'
+      });
+    }
+
+    const nextStatus = status || 'pending';
+    const nextPaymentStatus = payment_status || 'unpaid';
+
     const result = await pool.query(
-      `UPDATE bookings SET status = $1, payment_status = $2 WHERE id = $3 RETURNING *`,
-      [status, payment_status, req.params.id]
+      `UPDATE bookings
+       SET status = $1,
+           payment_status = $2
+       WHERE id = $3
+       RETURNING *`,
+      [nextStatus, nextPaymentStatus, bookingId]
     );
 
     if (result.rows.length === 0) {
@@ -138,11 +153,15 @@ export const updateBooking = async (req, res) => {
 
     res.json({
       success: true,
+      message: 'Booking updated successfully',
       booking: result.rows[0]
     });
   } catch (error) {
     console.error('Update booking error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Server error while updating booking'
+    });
   }
 };
 
