@@ -21,9 +21,12 @@
       align-items: center;
       gap: 16px;
       flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
     header h1 { margin: 0; font-size: 22px; }
-    main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+    main { padding: 24px; max-width: 1280px; margin: 0 auto; }
     .card {
       background: #fff;
       border-radius: 14px;
@@ -43,11 +46,12 @@
       border: 1px solid #d1d5db;
       border-radius: 10px;
       font-size: 14px;
+      background: #fff;
     }
     textarea { min-height: 90px; }
     button {
       border: 0;
-      padding: 11px 16px;
+      padding: 10px 14px;
       border-radius: 10px;
       background: #111827;
       color: #fff;
@@ -57,6 +61,7 @@
     button.secondary { background: #4b5563; }
     button.danger { background: #dc2626; }
     button.success { background: #059669; }
+    button.warning { background: #d97706; }
     button:disabled { opacity: .6; cursor: not-allowed; }
     .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
     .hidden { display: none !important; }
@@ -85,11 +90,41 @@
       font-size: 12px;
       font-weight: 700;
     }
-    .pill.paid, .pill.confirmed { background: #d1fae5; color: #047857; }
+    .pill.paid, .pill.confirmed, .pill.available { background: #d1fae5; color: #047857; }
     .pill.unpaid, .pill.pending { background: #fef3c7; color: #92400e; }
-    .pill.cancelled { background: #fee2e2; color: #991b1b; }
+    .pill.cancelled, .pill.unavailable { background: #fee2e2; color: #991b1b; }
     .section-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
     .muted { color: #6b7280; font-size: 14px; }
+    .thumb {
+      width: 74px;
+      height: 54px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      background: #f3f4f6;
+    }
+    .preview-wrap {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .upload-box {
+      border: 2px dashed #9ca3af;
+      border-radius: 14px;
+      padding: 18px;
+      background: #f9fafb;
+      text-align: center;
+    }
+    .form-banner {
+      padding: 12px;
+      border-radius: 12px;
+      background: #eef2ff;
+      margin-bottom: 14px;
+      font-weight: 700;
+      color: #3730a3;
+    }
+    .small-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   </style>
 </head>
 <body>
@@ -160,18 +195,20 @@
 
       <section class="card">
         <div class="section-title">
-          <h2>Rooms</h2>
+          <h2>Room Management</h2>
           <button id="refreshRoomsBtn">Refresh Rooms</button>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
+                <th>Image</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Price</th>
                 <th>Capacity</th>
                 <th>Available</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="roomsTable"></tbody>
@@ -179,9 +216,14 @@
         </div>
       </section>
 
-      <section class="card">
-        <h2>Add Room</h2>
+      <section class="card" id="roomEditorCard">
+        <div class="section-title">
+          <h2 id="roomFormTitle">Add Room</h2>
+          <button type="button" id="newRoomBtn" class="secondary">New Room</button>
+        </div>
+        <div id="editBanner" class="form-banner hidden">Editing current room</div>
         <form id="roomForm">
+          <input type="hidden" id="roomId" />
           <div class="grid">
             <div>
               <label for="roomName">Room Name</label>
@@ -204,6 +246,13 @@
               <label for="roomCapacity">Capacity</label>
               <input id="roomCapacity" type="number" required value="2" />
             </div>
+            <div>
+              <label for="roomAvailable">Availability</label>
+              <select id="roomAvailable">
+                <option value="true">Available</option>
+                <option value="false">Unavailable</option>
+              </select>
+            </div>
           </div>
           <div style="margin-top:14px;">
             <label for="roomDescription">Description</label>
@@ -219,8 +268,15 @@
               <input id="roomImages" placeholder="https://example.com/image.jpg" />
             </div>
           </div>
+          <div class="upload-box" style="margin-top:14px;">
+            <label for="roomImageUpload">Upload image preview box</label>
+            <input id="roomImageUpload" type="file" accept="image/*" />
+            <p class="muted">This stores the selected image as a data URL. For production, use Cloudinary later.</p>
+          </div>
+          <div id="imagePreview" class="preview-wrap"></div>
           <div class="actions">
-            <button id="addRoomBtn" type="submit" class="success">Add Room</button>
+            <button id="saveRoomBtn" type="submit" class="success">Save Room</button>
+            <button id="cancelEditBtn" type="button" class="secondary hidden">Cancel Edit</button>
           </div>
           <div id="roomStatus" class="status"></div>
         </form>
