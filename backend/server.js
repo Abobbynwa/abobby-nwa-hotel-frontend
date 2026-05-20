@@ -41,8 +41,10 @@ app.use(cors({
   },
   credentials: true
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Increase request body limit for Base64 payment evidence and room image uploads.
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Serve static files for admin dashboard
 app.use('/admin-assets', express.static(path.join(__dirname, 'public')));
@@ -106,6 +108,14 @@ app.use((req, res) => {
 // Error handler
 app.use((err, req, res, next) => {
   console.error('Error:', err);
+
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({
+      success: false,
+      message: 'Uploaded file is too large. Please upload a smaller image.'
+    });
+  }
+
   res.status(500).json({ 
     success: false,
     message: 'Server error',
