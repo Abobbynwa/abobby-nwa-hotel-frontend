@@ -8,7 +8,6 @@ const initDatabase = async () => {
   try {
     console.log('🔨 Creating database tables...');
 
-    // Users table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -20,7 +19,6 @@ const initDatabase = async () => {
       );
     `);
 
-    // Rooms table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS rooms (
         id SERIAL PRIMARY KEY,
@@ -36,7 +34,6 @@ const initDatabase = async () => {
       );
     `);
 
-    // Bookings table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS bookings (
         id SERIAL PRIMARY KEY,
@@ -52,13 +49,25 @@ const initDatabase = async () => {
         status VARCHAR(50) DEFAULT 'pending',
         payment_status VARCHAR(50) DEFAULT 'unpaid',
         payment_reference VARCHAR(255),
+        payment_method VARCHAR(50),
+        transfer_bank VARCHAR(100),
+        transfer_account_name VARCHAR(255),
+        transfer_account_number VARCHAR(50),
+        payment_proof TEXT,
+        payment_note TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
+    await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50);`);
+    await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS transfer_bank VARCHAR(100);`);
+    await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS transfer_account_name VARCHAR(255);`);
+    await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS transfer_account_number VARCHAR(50);`);
+    await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_proof TEXT;`);
+    await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_note TEXT;`);
+
     console.log('✅ Tables created successfully!');
 
-    // Create admin user
     const adminExists = await pool.query(
       'SELECT * FROM users WHERE email = $1',
       [process.env.ADMIN_EMAIL]
@@ -71,11 +80,8 @@ const initDatabase = async () => {
         ['Admin', process.env.ADMIN_EMAIL, hashedPassword, 'admin']
       );
       console.log('✅ Admin user created!');
-      console.log(`📧 Email: ${process.env.ADMIN_EMAIL}`);
-      console.log(`🔑 Password: ${process.env.ADMIN_PASSWORD}`);
     }
 
-    // Insert sample rooms
     const roomsExist = await pool.query('SELECT COUNT(*) FROM rooms');
     if (parseInt(roomsExist.rows[0].count) === 0) {
       const sampleRooms = [
