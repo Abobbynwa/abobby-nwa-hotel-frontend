@@ -1,22 +1,27 @@
 import nodemailer from 'nodemailer';
 
+const getEmailUser = () => (process.env.EMAIL_USER || '').trim();
+const getEmailPass = () => (process.env.EMAIL_PASS || '').replace(/\s+/g, '').trim();
+
 const hasEmailConfig = () => {
-  return Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+  return Boolean(getEmailUser() && getEmailPass());
 };
 
 const createTransporter = () => {
   if (!hasEmailConfig()) return null;
 
+  const port = Number(process.env.SMTP_PORT || 587);
+
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: false,
+    port,
+    secure: port === 465,
     connectionTimeout: 8000,
     greetingTimeout: 8000,
     socketTimeout: 10000,
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
+      user: getEmailUser(),
+      pass: getEmailPass()
     }
   });
 };
@@ -34,6 +39,7 @@ const sendSafeMail = async (mailOptions) => {
 };
 
 export const sendTransferEvidenceConfirmation = async (booking) => {
+  const emailUser = getEmailUser();
   const subject = `Payment Evidence Received - ${booking.reference}`;
 
   const text = `Hello ${booking.full_name},
@@ -70,7 +76,7 @@ Abobby Nwa Hotel & Suites`;
   `;
 
   return sendSafeMail({
-    from: `Abobby Nwa Hotel & Suites <${process.env.EMAIL_USER}>`,
+    from: `Abobby Nwa Hotel & Suites <${emailUser}>`,
     to: booking.email,
     subject,
     text,
@@ -79,11 +85,12 @@ Abobby Nwa Hotel & Suites`;
 };
 
 export const sendContactEmails = async ({ name, email, phone, subject, message }) => {
-  const adminRecipient = process.env.CONTACT_RECEIVER_EMAIL || process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+  const emailUser = getEmailUser();
+  const adminRecipient = process.env.CONTACT_RECEIVER_EMAIL || process.env.ADMIN_EMAIL || emailUser;
   const contactSubject = subject || 'Contact Message';
 
   const adminEmail = sendSafeMail({
-    from: `Abobby Nwa Hotel Website <${process.env.EMAIL_USER}>`,
+    from: `Abobby Nwa Hotel Website <${emailUser}>`,
     to: adminRecipient,
     replyTo: email,
     subject: `New Contact Message - ${contactSubject}`,
@@ -102,7 +109,7 @@ export const sendContactEmails = async ({ name, email, phone, subject, message }
   });
 
   const customerEmail = sendSafeMail({
-    from: `Abobby Nwa Hotel & Suites <${process.env.EMAIL_USER}>`,
+    from: `Abobby Nwa Hotel & Suites <${emailUser}>`,
     to: email,
     subject: 'We received your message - Abobby Nwa Hotel & Suites',
     text: `Hello ${name},\n\nThank you for contacting Abobby Nwa Hotel & Suites.\n\nWe have received your message and our team will get back to you as soon as possible.\n\nYour message:\n${message}\n\nThank you,\nAbobby Nwa Hotel & Suites`,
@@ -131,8 +138,10 @@ export const sendContactEmails = async ({ name, email, phone, subject, message }
 };
 
 export const sendContactReplyEmail = async ({ to, name, replyMessage }) => {
+  const emailUser = getEmailUser();
+
   return sendSafeMail({
-    from: `Abobby Nwa Hotel & Suites <${process.env.EMAIL_USER}>`,
+    from: `Abobby Nwa Hotel & Suites <${emailUser}>`,
     to,
     subject: 'Reply from Abobby Nwa Hotel & Suites',
     text: `Hello ${name},\n\n${replyMessage}\n\nThank you,\nAbobby Nwa Hotel & Suites`,
