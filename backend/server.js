@@ -54,6 +54,10 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/contact', contactRoutes);
 
 app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin-tabbed.html'));
+});
+
+app.get('/admin-clean', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin-clean.html'));
 });
 
