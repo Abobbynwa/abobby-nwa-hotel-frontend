@@ -11,6 +11,9 @@ const createTransporter = () => {
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: Number(process.env.SMTP_PORT || 587),
     secure: false,
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 10000,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
@@ -18,14 +21,19 @@ const createTransporter = () => {
   });
 };
 
-export const sendTransferEvidenceConfirmation = async (booking) => {
+const sendSafeMail = async (mailOptions) => {
   const transporter = createTransporter();
 
   if (!transporter) {
-    console.log('Email config missing. Skipping customer confirmation email.');
+    console.log('Email config missing. Skipping email.');
     return { sent: false, reason: 'missing_email_config' };
   }
 
+  await transporter.sendMail(mailOptions);
+  return { sent: true };
+};
+
+export const sendTransferEvidenceConfirmation = async (booking) => {
   const subject = `Payment Evidence Received - ${booking.reference}`;
 
   const text = `Hello ${booking.full_name},
@@ -61,29 +69,20 @@ Abobby Nwa Hotel & Suites`;
     </div>
   `;
 
-  await transporter.sendMail({
+  return sendSafeMail({
     from: `Abobby Nwa Hotel & Suites <${process.env.EMAIL_USER}>`,
     to: booking.email,
     subject,
     text,
     html
   });
-
-  return { sent: true };
 };
 
 export const sendContactEmails = async ({ name, email, phone, subject, message }) => {
-  const transporter = createTransporter();
-
-  if (!transporter) {
-    console.log('Email config missing. Skipping contact emails.');
-    return { adminSent: false, customerSent: false, reason: 'missing_email_config' };
-  }
-
   const adminRecipient = process.env.CONTACT_RECEIVER_EMAIL || process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
   const contactSubject = subject || 'Contact Message';
 
-  await transporter.sendMail({
+  const adminEmail = sendSafeMail({
     from: `Abobby Nwa Hotel Website <${process.env.EMAIL_USER}>`,
     to: adminRecipient,
     replyTo: email,
@@ -102,7 +101,7 @@ export const sendContactEmails = async ({ name, email, phone, subject, message }
     `
   });
 
-  await transporter.sendMail({
+  const customerEmail = sendSafeMail({
     from: `Abobby Nwa Hotel & Suites <${process.env.EMAIL_USER}>`,
     to: email,
     subject: 'We received your message - Abobby Nwa Hotel & Suites',
@@ -120,18 +119,19 @@ export const sendContactEmails = async ({ name, email, phone, subject, message }
     `
   });
 
-  return { adminSent: true, customerSent: true };
+  const results = await Promise.allSettled([adminEmail, customerEmail]);
+
+  return {
+    adminSent: results[0].status === 'fulfilled' && results[0].value.sent,
+    customerSent: results[1].status === 'fulfilled' && results[1].value.sent,
+    errors: results
+      .filter((result) => result.status === 'rejected')
+      .map((result) => result.reason?.message || 'Email failed')
+  };
 };
 
 export const sendContactReplyEmail = async ({ to, name, replyMessage }) => {
-  const transporter = createTransporter();
-
-  if (!transporter) {
-    console.log('Email config missing. Skipping contact reply email.');
-    return { sent: false, reason: 'missing_email_config' };
-  }
-
-  await transporter.sendMail({
+  return sendSafeMail({
     from: `Abobby Nwa Hotel & Suites <${process.env.EMAIL_USER}>`,
     to,
     subject: 'Reply from Abobby Nwa Hotel & Suites',
@@ -144,6 +144,4 @@ export const sendContactReplyEmail = async ({ to, name, replyMessage }) => {
       </div>
     `
   });
-
-  return { sent: true };
 };
