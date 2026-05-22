@@ -64,9 +64,13 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-// Serve admin.js
+// Serve admin scripts
 app.get('/admin.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.js'));
+});
+
+app.get('/admin-enhance.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin-enhance.js'));
 });
 
 // Health check
