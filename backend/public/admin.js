@@ -32,6 +32,27 @@ const paidCount = document.getElementById('paidCount');
 const formatCurrency = (amount) => `₦${Number(amount || 0).toLocaleString()}`;
 const getToken = () => localStorage.getItem(tokenKey);
 
+const formatDate = (value) => {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+};
+
+const extractNarration = (note = '') => {
+  const match = String(note).match(/Unique Narration:\s*([^|]+)/i);
+  return match ? match[1].trim() : '-';
+};
+
+const extractSelectedWallet = (note = '') => {
+  const match = String(note).match(/Selected Bank\/Wallet:\s*([^|]+)/i);
+  return match ? match[1].trim() : '';
+};
+
 const setStatus = (element, message, type = '') => {
   element.textContent = message;
   element.className = `status ${type}`.trim();
@@ -218,16 +239,18 @@ const loadBookings = async () => {
   }
 
   bookingsTable.innerHTML = bookings.map((booking) => {
+    const wallet = extractSelectedWallet(booking.payment_note) || booking.transfer_bank || 'Not selected';
+    const narration = extractNarration(booking.payment_note);
     const proof = booking.payment_proof
-      ? `<br><a href="${booking.payment_proof}" target="_blank"><img src="${booking.payment_proof}" style="width:80px;height:60px;object-fit:cover;border-radius:8px;margin-top:6px;" /></a>`
-      : '<br><span class="muted">No proof</span>';
+      ? `<br><a href="${booking.payment_proof}" target="_blank"><button class="secondary" style="margin-top:6px;">View Proof</button></a>`
+      : '<br><span class="muted">No proof uploaded</span>';
 
     const method = booking.payment_method === 'bank_transfer'
-      ? `Transfer<br><span class="muted">${escapeHtml(booking.transfer_bank || 'Opay / Palmpay / Moniepoint')}</span>${proof}`
+      ? `Transfer<br><span class="muted">Wallet: ${escapeHtml(wallet)}</span><br><span class="muted">Narration: ${escapeHtml(narration)}</span>${proof}`
       : (booking.payment_method || 'Paystack/None');
 
     const guestDetails = `
-      ${escapeHtml(booking.full_name)}<br>
+      <strong>${escapeHtml(booking.full_name)}</strong><br>
       <span class="muted">${escapeHtml(booking.email)}</span><br>
       <span class="muted">Phone: ${escapeHtml(booking.phone || '-')}</span><br>
       <span class="muted">Gender: ${escapeHtml(booking.gender || '-')}</span><br>
@@ -237,10 +260,10 @@ const loadBookings = async () => {
 
     return `
       <tr>
-        <td>${escapeHtml(booking.reference)}</td>
+        <td><strong>${escapeHtml(booking.reference)}</strong></td>
         <td>${guestDetails}</td>
         <td>${escapeHtml(booking.room_name || booking.room_type || '-')}</td>
-        <td>${escapeHtml(booking.check_in || '-')}<br>${escapeHtml(booking.check_out || '-')}</td>
+        <td>${formatDate(booking.check_in)}<br>${formatDate(booking.check_out)}</td>
         <td>${formatCurrency(booking.total)}</td>
         <td><span class="pill ${booking.status}">${escapeHtml(booking.status)}</span></td>
         <td><span class="pill ${booking.payment_status}">${escapeHtml(booking.payment_status)}</span><br>${method}</td>
@@ -248,6 +271,7 @@ const loadBookings = async () => {
           <button class="success" onclick="updateBooking(${booking.id}, 'confirmed', 'paid')">Mark Paid</button>
           <button class="warning" onclick="updateBooking(${booking.id}, 'confirmed', '${booking.payment_status}')">Confirm</button>
           <button class="danger" onclick="updateBooking(${booking.id}, 'cancelled', '${booking.payment_status}')">Cancel</button>
+          <button class="danger" onclick="deleteBookingRecord(${booking.id})">Delete</button>
         </td>
       </tr>
     `;
@@ -355,6 +379,17 @@ window.updateBooking = async (id, status, paymentStatus) => {
       method: 'PATCH',
       body: JSON.stringify({ status, payment_status: paymentStatus })
     });
+    await loadBookings();
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
+window.deleteBookingRecord = async (id) => {
+  if (!confirm('Delete this booking permanently? Use this mainly for test/old bookings.')) return;
+
+  try {
+    await apiRequest(`/bookings/${id}`, { method: 'DELETE' });
     await loadBookings();
   } catch (error) {
     alert(error.message);
