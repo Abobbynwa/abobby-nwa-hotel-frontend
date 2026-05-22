@@ -38,26 +38,22 @@ export const sendContactMessage = async (req, res) => {
       [name, email, phone || null, subject || 'Contact Message', message]
     );
 
-    let emailStatus = { adminSent: false, customerSent: false };
-
-    try {
-      emailStatus = await sendContactEmails({
-        name,
-        email,
-        phone,
-        subject: subject || 'Contact Message',
-        message
-      });
-    } catch (emailError) {
-      console.error('Contact email error:', emailError.message);
-      emailStatus = { adminSent: false, customerSent: false, reason: emailError.message };
-    }
-
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
-      message: 'Message received successfully. A confirmation has been sent to your email if email service is active.',
-      contact: result.rows[0],
-      emailStatus
+      message: 'Message received successfully. Confirmation email will be sent if email service is active.',
+      contact: result.rows[0]
+    });
+
+    sendContactEmails({
+      name,
+      email,
+      phone,
+      subject: subject || 'Contact Message',
+      message
+    }).then((emailStatus) => {
+      console.log('Contact email status:', emailStatus);
+    }).catch((emailError) => {
+      console.error('Contact email background error:', emailError.message);
     });
   } catch (error) {
     console.error('Contact message error:', error);
@@ -113,19 +109,6 @@ export const replyContactMessage = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Contact message not found' });
     }
 
-    let emailStatus = { sent: false };
-
-    try {
-      emailStatus = await sendContactReplyEmail({
-        to: existing.rows[0].email,
-        name: existing.rows[0].name,
-        replyMessage
-      });
-    } catch (emailError) {
-      console.error('Contact reply email error:', emailError.message);
-      emailStatus = { sent: false, reason: emailError.message };
-    }
-
     const result = await pool.query(
       `UPDATE contact_messages
        SET admin_reply = $1,
@@ -136,11 +119,20 @@ export const replyContactMessage = async (req, res) => {
       [replyMessage, 'replied', contactId]
     );
 
-    return res.json({
+    res.json({
       success: true,
-      message: 'Reply saved and email sent if email service is active.',
-      contact: result.rows[0],
-      emailStatus
+      message: 'Reply saved successfully. Email reply will be sent if email service is active.',
+      contact: result.rows[0]
+    });
+
+    sendContactReplyEmail({
+      to: existing.rows[0].email,
+      name: existing.rows[0].name,
+      replyMessage
+    }).then((emailStatus) => {
+      console.log('Contact reply email status:', emailStatus);
+    }).catch((emailError) => {
+      console.error('Contact reply email background error:', emailError.message);
     });
   } catch (error) {
     console.error('Reply contact message error:', error);
