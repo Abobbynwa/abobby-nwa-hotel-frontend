@@ -1,0 +1,225 @@
+/* Section-level upgrade for Abobby Hotel Admin */
+
+.section-title h2::before {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.card:has(#bookingsTable) .section-title h2::before { content: '📅'; }
+.card:has(#roomsTable) .section-title h2::before { content: '🛏️'; }
+#contactSection .section-title h2::before { content: '💬'; }
+#roomEditorCard .section-title h2::before { content: '➕'; }
+
+.admin-section-note {
+  display: block;
+  margin-top: 7px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.admin-action-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.booking-guest-card,
+.contact-customer-card,
+.room-title-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.booking-ref,
+.room-name-strong,
+.contact-name-strong {
+  font-weight: 900;
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.booking-meta,
+.contact-meta,
+.room-meta {
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.booking-date-box,
+.payment-box,
+.contact-message-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 12px;
+  line-height: 1.55;
+}
+
+.booking-total {
+  font-size: 17px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.payment-method-title {
+  font-weight: 900;
+  color: #0f172a;
+  margin: 6px 0 3px;
+}
+
+.payment-proof-btn,
+.reply-btn,
+.room-edit-btn,
+.room-disable-btn,
+.room-delete-btn,
+.booking-cancel-btn,
+.booking-delete-btn,
+.booking-confirm-btn,
+.booking-paid-btn {
+  min-width: 98px;
+  text-align: center;
+}
+
+.booking-action-stack,
+.room-action-stack {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(92px, 1fr));
+  gap: 8px;
+  min-width: 210px;
+}
+
+.booking-action-stack button,
+.room-action-stack button {
+  margin: 0 !important;
+}
+
+.contact-reply-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 260px;
+}
+
+.contact-reply-panel textarea {
+  min-height: 92px !important;
+  resize: vertical;
+}
+
+.contact-message-text {
+  color: #111827;
+  margin-top: 4px;
+  white-space: normal;
+  max-width: 460px;
+}
+
+.admin-reply-preview {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  color: #065f46;
+}
+
+.room-image-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.room-image-box .thumb {
+  width: 104px !important;
+  height: 76px !important;
+}
+
+.empty-image {
+  width: 104px;
+  height: 76px;
+  border-radius: 18px;
+  background: #e5e7eb;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+  font-weight: 900;
+}
+
+#roomEditorCard form {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  padding: 22px;
+}
+
+#roomEditorCard .grid {
+  align-items: end;
+}
+
+#roomFormTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#editBanner {
+  border-left: 5px solid #2563eb;
+}
+
+.form-helper-text {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+#imagePreview {
+  min-height: 70px;
+  padding-top: 8px;
+}
+
+#imagePreview:empty::before {
+  content: 'Image preview will appear here after upload or URL paste.';
+  color: #64748b;
+  font-size: 13px;
+}
+
+.status-summary-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.section-mini-stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0 16px;
+}
+
+.section-mini-stat {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 800;
+  color: #334155;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .booking-action-stack,
+  .room-action-stack {
+    grid-template-columns: 1fr;
+    min-width: 150px;
+  }
+
+  .contact-reply-panel {
+    min-width: 220px;
+  }
+}
