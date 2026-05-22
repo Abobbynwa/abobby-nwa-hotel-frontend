@@ -165,6 +165,30 @@ export const updateBooking = async (req, res) => {
   }
 };
 
+export const deleteBooking = async (req, res) => {
+  try {
+    const bookingId = Number(req.params.id);
+
+    if (!Number.isInteger(bookingId) || bookingId <= 0) {
+      return res.status(400).json({ success: false, message: 'Invalid booking ID' });
+    }
+
+    const result = await pool.query(
+      'DELETE FROM bookings WHERE id = $1 RETURNING *',
+      [bookingId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    res.json({ success: true, message: 'Booking deleted successfully', booking: result.rows[0] });
+  } catch (error) {
+    console.error('Delete booking error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error while deleting booking' });
+  }
+};
+
 export const submitTransferProof = async (req, res) => {
   try {
     const { reference, paymentProof, paymentNote } = req.body;
