@@ -1,126 +1,187 @@
 :root{
-  --bg:#eef2f7;
-  --panel:#ffffff;
-  --dark:#0f172a;
+  --nav:#07111f;
+  --nav2:#0f172a;
+  --bg1:#edf5ff;
+  --bg2:#f8fafc;
+  --card:#ffffff;
+  --ink:#111827;
   --muted:#64748b;
-  --border:#e2e8f0;
-  --soft:#f8fafc;
+  --border:#dbe5f0;
   --green:#059669;
-  --green-soft:#d1fae5;
   --red:#dc2626;
-  --red-soft:#fee2e2;
   --amber:#d97706;
-  --amber-soft:#fef3c7;
   --blue:#2563eb;
-  --shadow:0 22px 55px rgba(15,23,42,.08);
-  --radius:22px;
+  --purple:#7c3aed;
+  --shadow:0 24px 65px rgba(15,23,42,.12);
 }
 
+*{scroll-behavior:smooth!important;}
+
 body{
-  background:linear-gradient(135deg,#eef2f7,#f8fafc 45%,#e0f2fe)!important;
-  color:#1f2937!important;
+  min-height:100vh!important;
+  background:
+    radial-gradient(circle at top left,rgba(37,99,235,.16),transparent 34%),
+    radial-gradient(circle at top right,rgba(124,58,237,.13),transparent 32%),
+    linear-gradient(135deg,var(--bg1),var(--bg2) 45%,#eaf7ff)!important;
+  color:var(--ink)!important;
+}
+
+body:before{
+  content:"Admin Console";
+  position:fixed;
+  left:32px;
+  top:92px;
+  z-index:-1;
+  font-size:86px;
+  line-height:1;
+  font-weight:900;
+  color:rgba(15,23,42,.035);
+  letter-spacing:-3px;
 }
 
 header{
-  background:rgba(15,23,42,.98)!important;
-  padding:18px 34px!important;
-  box-shadow:0 12px 30px rgba(15,23,42,.22)!important;
+  min-height:82px!important;
+  background:linear-gradient(135deg,var(--nav),var(--nav2))!important;
+  padding:18px 36px!important;
+  box-shadow:0 18px 50px rgba(2,6,23,.38)!important;
   border-bottom:1px solid rgba(255,255,255,.08)!important;
+  backdrop-filter:blur(14px)!important;
+}
+
+header:before{
+  content:"";
+  width:44px;
+  height:44px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#f59e0b,#ef4444);
+  box-shadow:0 14px 30px rgba(245,158,11,.25);
+  margin-right:10px;
 }
 
 header h1{
-  font-size:23px!important;
-  letter-spacing:.2px!important;
+  font-size:25px!important;
+  font-weight:900!important;
+  letter-spacing:.3px!important;
 }
 
 #adminUser{
-  background:rgba(255,255,255,.08)!important;
-  border:1px solid rgba(255,255,255,.1)!important;
-  padding:10px 14px!important;
+  background:rgba(255,255,255,.1)!important;
+  color:#e5e7eb!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  padding:12px 18px!important;
   border-radius:999px!important;
-  color:#cbd5e1!important;
-  font-weight:700!important;
+  font-weight:900!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+
+#logoutBtn{
+  background:rgba(255,255,255,.15)!important;
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.18)!important;
 }
 
 main{
-  max-width:1400px!important;
-  padding:30px!important;
+  max-width:1500px!important;
+  padding:32px!important;
 }
 
 .card{
   background:rgba(255,255,255,.96)!important;
-  border:1px solid rgba(226,232,240,.9)!important;
-  border-radius:var(--radius)!important;
+  border:1px solid rgba(219,229,240,.95)!important;
+  border-radius:26px!important;
   box-shadow:var(--shadow)!important;
-  padding:24px!important;
-  margin-bottom:24px!important;
+  padding:26px!important;
+  margin-bottom:26px!important;
 }
 
 #loginSection{
-  max-width:920px!important;
-  margin:40px auto!important;
+  max-width:980px!important;
+  margin:56px auto!important;
+  padding:34px!important;
 }
 
 #dashboardSection > .grid{
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:22px!important;
+  margin-bottom:26px!important;
 }
 
 #dashboardSection > .grid .card{
+  min-height:132px!important;
   position:relative!important;
   overflow:hidden!important;
+  background:linear-gradient(145deg,#ffffff,#f8fbff)!important;
 }
 
 #dashboardSection > .grid .card:before{
   content:"";
   position:absolute;
-  right:-20px;
-  top:-20px;
-  width:100px;
-  height:100px;
-  background:rgba(37,99,235,.08);
+  right:-34px;
+  top:-34px;
+  width:135px;
+  height:135px;
+  background:linear-gradient(135deg,rgba(37,99,235,.13),rgba(124,58,237,.09));
   border-radius:999px;
 }
 
+#dashboardSection > .grid .card:nth-child(2):before{background:linear-gradient(135deg,rgba(5,150,105,.16),rgba(37,99,235,.08));}
+#dashboardSection > .grid .card:nth-child(3):before{background:linear-gradient(135deg,rgba(217,119,6,.16),rgba(245,158,11,.08));}
+
 #dashboardSection > .grid .card h3{
   margin:0!important;
-  color:var(--muted)!important;
-  font-size:14px!important;
+  color:#64748b!important;
+  font-size:13px!important;
+  font-weight:900!important;
   text-transform:uppercase!important;
-  letter-spacing:.08em!important;
+  letter-spacing:.16em!important;
 }
 
 #dashboardSection > .grid .card h2{
-  margin:12px 0 0!important;
-  font-size:36px!important;
-  color:var(--dark)!important;
+  margin:16px 0 0!important;
+  font-size:42px!important;
+  line-height:1!important;
+  color:#0f172a!important;
+}
+
+.section-title{
+  align-items:center!important;
+  margin-bottom:16px!important;
 }
 
 .section-title h2,
 .card h2{
-  font-size:26px!important;
-  color:var(--dark)!important;
-  margin-top:0!important;
+  font-size:30px!important;
+  color:#0f172a!important;
+  margin:0!important;
+  letter-spacing:-.7px!important;
+}
+
+.card:has(#bookingsTable),
+.card:has(#roomsTable),
+#contactSection,
+#roomEditorCard{
+  border-top:5px solid #0f172a!important;
 }
 
 .toolbar{
-  background:var(--soft)!important;
+  background:linear-gradient(135deg,#f8fafc,#eff6ff)!important;
   border:1px solid var(--border)!important;
-  padding:16px!important;
-  border-radius:18px!important;
-  gap:14px!important;
-  margin:18px 0!important;
+  padding:18px!important;
+  border-radius:22px!important;
+  gap:16px!important;
+  margin:18px 0 20px!important;
 }
 
 label{
   color:#334155!important;
   font-size:14px!important;
-  font-weight:800!important;
+  font-weight:900!important;
 }
 
 input,textarea,select{
-  padding:13px 14px!important;
+  padding:15px 16px!important;
   border:1px solid #cbd5e1!important;
-  border-radius:14px!important;
+  border-radius:16px!important;
   font-size:15px!important;
   background:#fff!important;
   outline:none!important;
@@ -129,14 +190,15 @@ input,textarea,select{
 
 input:focus,textarea:focus,select:focus{
   border-color:var(--blue)!important;
-  box-shadow:0 0 0 4px rgba(37,99,235,.1)!important;
+  box-shadow:0 0 0 5px rgba(37,99,235,.11)!important;
 }
 
 .table-wrap{
   border:1px solid var(--border)!important;
-  border-radius:18px!important;
+  border-radius:22px!important;
   background:#fff!important;
   overflow-x:auto!important;
+  box-shadow:0 12px 35px rgba(15,23,42,.04)!important;
 }
 
 table{
@@ -145,76 +207,108 @@ table{
 }
 
 th{
-  background:#f8fafc!important;
+  background:#f1f5f9!important;
   color:#334155!important;
-  font-size:13px!important;
+  font-size:12px!important;
   text-transform:uppercase!important;
-  letter-spacing:.05em!important;
+  letter-spacing:.12em!important;
+  padding:18px 16px!important;
 }
 
-th,td{
-  padding:16px 14px!important;
+td{
+  padding:20px 16px!important;
   border-bottom:1px solid var(--border)!important;
 }
 
 tr:hover td{
-  background:#fbfdff!important;
+  background:#f8fbff!important;
 }
 
-tr:last-child td{
-  border-bottom:0!important;
-}
+tr:last-child td{border-bottom:0!important;}
 
 button{
-  border-radius:13px!important;
+  border-radius:15px!important;
   font-weight:900!important;
+  letter-spacing:.2px!important;
+  padding:12px 18px!important;
   transition:.2s!important;
-  box-shadow:0 10px 22px rgba(15,23,42,.12)!important;
+  box-shadow:0 13px 28px rgba(15,23,42,.14)!important;
 }
 
 button:hover:not(:disabled){
-  transform:translateY(-1px)!important;
-  filter:brightness(1.03)!important;
+  transform:translateY(-2px)!important;
+  filter:brightness(1.05)!important;
 }
+
+button.success{background:linear-gradient(135deg,#059669,#047857)!important;}
+button.danger{background:linear-gradient(135deg,#ef4444,#dc2626)!important;}
+button.warning{background:linear-gradient(135deg,#f59e0b,#d97706)!important;}
+button.secondary{background:linear-gradient(135deg,#64748b,#475569)!important;}
 
 .pill{
-  padding:6px 10px!important;
+  padding:7px 12px!important;
   font-weight:900!important;
   text-transform:capitalize!important;
+  border-radius:999px!important;
 }
 
+.pill.paid,.pill.confirmed,.pill.available,.pill.replied{background:#d1fae5!important;color:#047857!important;}
+.pill.unpaid,.pill.pending,.pill.new,.pill.pending_review{background:#fef3c7!important;color:#92400e!important;}
+.pill.cancelled,.pill.unavailable{background:#fee2e2!important;color:#991b1b!important;}
+
 .thumb{
-  width:86px!important;
-  height:62px!important;
-  border-radius:14px!important;
+  width:96px!important;
+  height:70px!important;
+  border-radius:18px!important;
+  object-fit:cover!important;
+  border:1px solid #dbe5f0!important;
+  box-shadow:0 10px 22px rgba(15,23,42,.12)!important;
 }
 
 .upload-box{
   border:2px dashed #94a3b8!important;
-  border-radius:18px!important;
-  background:#f8fafc!important;
+  border-radius:22px!important;
+  background:linear-gradient(135deg,#f8fafc,#eff6ff)!important;
+  padding:24px!important;
 }
 
 .pager{
-  margin-top:16px!important;
-  padding-top:6px!important;
+  margin-top:18px!important;
+  padding-top:8px!important;
 }
 
-.collapsed-text{
-  max-width:430px!important;
+.muted{
+  color:#64748b!important;
+  line-height:1.55!important;
 }
 
-.ref-code,
-.guest-name{
+.ref-code,.guest-name,td strong{
   font-weight:900!important;
-  color:var(--dark)!important;
+  color:#0f172a!important;
+}
+
+.small-actions{
+  gap:10px!important;
+  min-width:170px!important;
+}
+
+.collapsed-text{max-width:460px!important;}
+
+#quickAddRoomsBtn{
+  background:linear-gradient(135deg,#10b981,#047857)!important;
+}
+
+#roomEditorCard{
+  background:linear-gradient(145deg,#ffffff,#f8fbff)!important;
 }
 
 @media(max-width:850px){
   main{padding:16px!important;}
   header{padding:16px!important;}
+  header:before{display:none!important;}
   #dashboardSection > .grid{grid-template-columns:1fr!important;}
   .toolbar{grid-template-columns:1fr!important;}
-  .card{padding:18px!important;}
-  th,td{padding:12px 10px!important;}
+  .card{padding:18px!important;border-radius:20px!important;}
+  th,td{padding:13px 10px!important;}
+  body:before{display:none!important;}
 }
