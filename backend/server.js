@@ -23,7 +23,9 @@ const allowedOrigins = [
   'http://localhost:3000',
   'https://abobby-nwa-hotel-frontend.vercel.app',
   'https://abobby-nwa-hotel-frontend-3v5j.vercel.app',
-  process.env.FRONTEND_URL
+  'https://abobby-nwa-hotel-frontend-x83e.onrender.com',
+  process.env.FRONTEND_URL,
+  process.env.RENDER_EXTERNAL_URL
 ].filter(Boolean);
 
 // Middleware
@@ -33,7 +35,8 @@ app.use(cors({
 
     const isAllowed =
       allowedOrigins.includes(origin) ||
-      origin.endsWith('.vercel.app');
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('.onrender.com');
 
     if (isAllowed) return callback(null, true);
 
