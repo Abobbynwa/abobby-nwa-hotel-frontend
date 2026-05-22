@@ -9,6 +9,7 @@ let rooms = [];
 let contacts = [];
 let bPage = 1;
 let cPage = 1;
+let rPage = 1;
 
 const fallbackImg = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900';
 const token = () => localStorage.getItem(tokenKey);
@@ -256,7 +257,7 @@ function renderContacts() {
 
       <div class="message-reply-box">
         <label>Reply to customer</label>
-        <textarea id="reply-${c.id}" placeholder="Write a professional reply...">${esc(c.admin_reply || '')}</textarea>
+        <textarea id="reply-${c.id}" placeholder="Write a new reply... Leave blank until you are ready to respond."></textarea>
         <button class="success reply-btn" onclick="replyContact(${c.id})">Send Reply</button>
       </div>
     </article>`;
@@ -275,21 +276,47 @@ async function loadContacts() {
   renderContacts();
 }
 
-async function loadRooms() {
-  const data = await api('/rooms');
-  rooms = data.rooms || [];
-  $('roomCount').textContent = rooms.length;
+function fRooms() {
+  const q = ($('roomSearch')?.value || '').toLowerCase().trim();
+  const type = $('roomTypeFilter')?.value || 'all';
+  const avail = $('roomAvailabilityFilter')?.value || 'all';
+  const sort = $('roomSort')?.value || 'newest';
+
+  let list = rooms.filter((r) => {
+    const roomText = `${r.name} ${r.type} ${r.description} ${(Array.isArray(r.amenities) ? r.amenities.join(' ') : '')}`.toLowerCase();
+    const matchQ = !q || roomText.includes(q);
+    const matchType = type === 'all' || r.type === type;
+    const matchAvail = avail === 'all' || String(Boolean(r.available)) === avail;
+    return matchQ && matchType && matchAvail;
+  });
+
+  if (sort === 'price_low') list = list.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
+  if (sort === 'price_high') list = list.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
+  if (sort === 'name') list = list.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+  if (sort === 'capacity_high') list = list.sort((a, b) => Number(b.capacity || 0) - Number(a.capacity || 0));
+  if (sort === 'newest') list = list.sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+
+  return list;
+}
+
+function renderRooms() {
+  const list = fRooms();
+  const pages = Math.max(1, Math.ceil(list.length / PAGE));
+  rPage = Math.min(Math.max(1, rPage), pages);
+  const start = (rPage - 1) * PAGE;
+  const rows = list.slice(start, start + PAGE);
 
   const mini = $('roomMiniStats');
   if (mini) {
     mini.innerHTML = `
       <span class="section-mini-stat">Rooms: ${rooms.length}</span>
+      <span class="section-mini-stat">Showing: ${list.length}</span>
       <span class="section-mini-stat">Available: ${rooms.filter(r => r.available).length}</span>
       <span class="section-mini-stat">Disabled: ${rooms.filter(r => !r.available).length}</span>
     `;
   }
 
-  $('roomsTable').innerHTML = rooms.map((r) => {
+  $('roomsTable').innerHTML = rows.map((r) => {
     const img = imgList(r.images)[0] || fallbackImg;
     return `<tr>
       <td><div class="room-image-box"><img class="thumb" src="${esc(img)}" onerror="this.onerror=null;this.src='${fallbackImg}'"></div></td>
@@ -301,7 +328,19 @@ async function loadRooms() {
       <td><div class="room-action-stack"><button class="room-edit-btn" onclick="editRoom(${r.id})">Edit</button><button class="warning room-disable-btn" onclick="toggleRoom(${r.id})">${r.available ? 'Disable' : 'Enable'}</button><button class="danger room-delete-btn" onclick="deleteRoom(${r.id})">Delete</button></div></td>
     </tr>`;
   }).join('') || '<tr><td colspan="7">No rooms found.</td></tr>';
+
+  if ($('roomPageInfo')) $('roomPageInfo').textContent = `Showing ${list.length ? start + 1 : 0}-${Math.min(start + PAGE, list.length)} of ${list.length} rooms | Page ${rPage}/${pages}`;
+  if ($('roomPrevBtn')) $('roomPrevBtn').disabled = rPage <= 1;
+  if ($('roomNextBtn')) $('roomNextBtn').disabled = rPage >= pages;
 }
+
+async function loadRooms() {
+  const data = await api('/rooms');
+  rooms = data.rooms || [];
+  $('roomCount').textContent = rooms.length;
+  renderRooms();
+}
+window.loadRooms = loadRooms;
 
 function roomData() {
   return {
@@ -414,6 +453,62 @@ function upgradeStaticSections() {
   if (roomCard && !$('roomMiniStats')) {
     roomCard.querySelector('.section-title h2').insertAdjacentHTML('afterend', '<span class="admin-section-note">Manage room images, prices, capacity, status, and availability from one section.</span>');
     roomCard.querySelector('.section-title').insertAdjacentHTML('afterend', '<div id="roomMiniStats" class="section-mini-stats"></div>');
+  }
+
+  if (roomCard && !$('roomFilters')) {
+    const tableWrap = roomCard.querySelector('.table-wrap');
+    tableWrap.insertAdjacentHTML('beforebegin', `
+      <div id="roomFilters" class="toolbar admin-room-filters">
+        <div>
+          <label>Search rooms</label>
+          <input id="roomSearch" placeholder="Search name, description, amenity...">
+        </div>
+        <div>
+          <label>Room Type</label>
+          <select id="roomTypeFilter">
+            <option value="all">All Types</option>
+            <option value="standard">Standard</option>
+            <option value="deluxe">Deluxe</option>
+            <option value="executive">Executive</option>
+            <option value="presidential">Presidential</option>
+          </select>
+        </div>
+        <div>
+          <label>Availability</label>
+          <select id="roomAvailabilityFilter">
+            <option value="all">All Rooms</option>
+            <option value="true">Available</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
+        <div>
+          <label>Sort</label>
+          <select id="roomSort">
+            <option value="newest">Newest First</option>
+            <option value="price_low">Price: Low to High</option>
+            <option value="price_high">Price: High to Low</option>
+            <option value="capacity_high">Capacity: High First</option>
+            <option value="name">Name A-Z</option>
+          </select>
+        </div>
+      </div>
+    `);
+
+    tableWrap.insertAdjacentHTML('afterend', `
+      <div class="pager">
+        <span id="roomPageInfo" class="muted"></span>
+        <div>
+          <button id="roomPrevBtn" class="secondary" type="button">Previous</button>
+          <button id="roomNextBtn" class="secondary" type="button">Next</button>
+        </div>
+      </div>
+    `);
+
+    ['roomSearch', 'roomTypeFilter', 'roomAvailabilityFilter', 'roomSort'].forEach((id) => {
+      $(id).oninput = $(id).onchange = () => { rPage = 1; renderRooms(); };
+    });
+    $('roomPrevBtn').onclick = () => { rPage = Math.max(1, rPage - 1); renderRooms(); };
+    $('roomNextBtn').onclick = () => { rPage++; renderRooms(); };
   }
 
   if ($('roomEditorCard') && !$('roomFormHelper')) {
