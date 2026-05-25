@@ -1,5 +1,5 @@
 import pool from '../config/db.js';
-import { sendContactEmails, sendContactReplyEmail } from '../utils/emailService.js';
+import { sendContactEmails, sendContactReplyEmail, sendAdminDirectEmail } from '../utils/emailService.js';
 
 const ensureContactTable = async () => {
   await pool.query(`
@@ -139,6 +139,55 @@ export const replyContactMessage = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Unable to reply contact message',
+      error: error.message
+    });
+  }
+};
+
+export const sendAdminMessage = async (req, res) => {
+  try {
+    await ensureContactTable();
+
+    const { name, email, subject, message } = req.body;
+
+    if (!email || !message) {
+      return res.status(400).json({
+        success: false,
+        message: 'Customer email and message are required'
+      });
+    }
+
+    const safeName = name || 'Guest';
+    const safeSubject = subject || 'Message from Abobby Nwa Hotel & Suites';
+
+    const result = await pool.query(
+      `INSERT INTO contact_messages (name, email, phone, subject, message, status, admin_reply, replied_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
+       RETURNING *`,
+      [safeName, email, null, safeSubject, 'Admin direct message', 'replied', message]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: 'Admin message saved. Email will send if SMTP is active.',
+      contact: result.rows[0]
+    });
+
+    sendAdminDirectEmail({
+      to: email,
+      name: safeName,
+      subject: safeSubject,
+      message
+    }).then((emailStatus) => {
+      console.log('Admin direct email status:', emailStatus);
+    }).catch((emailError) => {
+      console.error('Admin direct email background error:', emailError.message);
+    });
+  } catch (error) {
+    console.error('Admin direct message error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Unable to send admin message',
       error: error.message
     });
   }
