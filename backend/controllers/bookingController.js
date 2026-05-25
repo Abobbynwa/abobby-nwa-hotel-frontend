@@ -1,5 +1,9 @@
 import pool from '../config/db.js';
-import { sendTransferEvidenceConfirmation } from '../utils/emailService.js';
+import {
+  sendBookingCreatedEmail,
+  sendBookingStatusEmail,
+  sendTransferEvidenceConfirmation
+} from '../utils/emailService.js';
 
 const generateReference = () => {
   return `ABH-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
@@ -67,10 +71,20 @@ export const createBooking = async (req, res) => {
       ]
     );
 
+    let emailConfirmation = { sent: false };
+
+    try {
+      emailConfirmation = await sendBookingCreatedEmail(result.rows[0]);
+    } catch (emailError) {
+      console.error('Booking created email error:', emailError.message);
+      emailConfirmation = { sent: false, reason: emailError.message };
+    }
+
     res.status(201).json({
       success: true,
       reference,
-      booking: result.rows[0]
+      booking: result.rows[0],
+      emailConfirmation
     });
   } catch (error) {
     console.error('Create booking error:', error);
@@ -135,8 +149,21 @@ export const updateBooking = async (req, res) => {
       });
     }
 
-    const nextStatus = status || 'pending';
-    const nextPaymentStatus = payment_status || 'unpaid';
+    const currentBooking = await pool.query(
+      `SELECT b.*, r.name as room_name, r.type as room_type
+       FROM bookings b
+       LEFT JOIN rooms r ON b.room_id = r.id
+       WHERE b.id = $1`,
+      [bookingId]
+    );
+
+    if (currentBooking.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    const previous = currentBooking.rows[0];
+    const nextStatus = status || previous.status || 'pending';
+    const nextPaymentStatus = payment_status || previous.payment_status || 'unpaid';
 
     const result = await pool.query(
       `UPDATE bookings
@@ -147,14 +174,35 @@ export const updateBooking = async (req, res) => {
       [nextStatus, nextPaymentStatus, bookingId]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Booking not found' });
+    const updatedBooking = {
+      ...previous,
+      ...result.rows[0],
+      room_name: previous.room_name,
+      room_type: previous.room_type
+    };
+
+    let emailConfirmation = { sent: false };
+
+    try {
+      if (previous.status !== nextStatus || previous.payment_status !== nextPaymentStatus) {
+        if (nextStatus === 'confirmed' || nextPaymentStatus === 'paid') {
+          emailConfirmation = await sendBookingStatusEmail(updatedBooking, 'confirmed');
+        } else if (nextStatus === 'cancelled') {
+          emailConfirmation = await sendBookingStatusEmail(updatedBooking, 'cancelled');
+        } else {
+          emailConfirmation = await sendBookingStatusEmail(updatedBooking, 'updated');
+        }
+      }
+    } catch (emailError) {
+      console.error('Booking status email error:', emailError.message);
+      emailConfirmation = { sent: false, reason: emailError.message };
     }
 
     res.json({
       success: true,
       message: 'Booking updated successfully',
-      booking: result.rows[0]
+      booking: result.rows[0],
+      emailConfirmation
     });
   } catch (error) {
     console.error('Update booking error:', error);
