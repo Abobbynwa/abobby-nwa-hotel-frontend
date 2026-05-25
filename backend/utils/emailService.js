@@ -26,6 +26,14 @@ const createTransporter = () => {
   });
 };
 
+const safeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (m) => ({
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#039;'
+}[m]));
+
 const sendSafeMail = async (mailOptions) => {
   const transporter = createTransporter();
 
@@ -61,14 +69,14 @@ Abobby Nwa Hotel & Suites`;
   const html = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
       <h2>Payment Evidence Received</h2>
-      <p>Hello <strong>${booking.full_name}</strong>,</p>
+      <p>Hello <strong>${safeHtml(booking.full_name)}</strong>,</p>
       <p>We have received your payment evidence for your booking at <strong>Abobby Nwa Hotel & Suites</strong>.</p>
       <table style="border-collapse: collapse; width: 100%; max-width: 560px;">
-        <tr><td style="padding: 8px; border: 1px solid #e5e7eb;">Booking Reference</td><td style="padding: 8px; border: 1px solid #e5e7eb;"><strong>${booking.reference}</strong></td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #e5e7eb;">Booking Reference</td><td style="padding: 8px; border: 1px solid #e5e7eb;"><strong>${safeHtml(booking.reference)}</strong></td></tr>
         <tr><td style="padding: 8px; border: 1px solid #e5e7eb;">Payment Status</td><td style="padding: 8px; border: 1px solid #e5e7eb;">Pending Review</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #e5e7eb;">Amount</td><td style="padding: 8px; border: 1px solid #e5e7eb;">₦${Number(booking.total || 0).toLocaleString()}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #e5e7eb;">Check-in</td><td style="padding: 8px; border: 1px solid #e5e7eb;">${booking.check_in}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #e5e7eb;">Check-out</td><td style="padding: 8px; border: 1px solid #e5e7eb;">${booking.check_out}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #e5e7eb;">Check-in</td><td style="padding: 8px; border: 1px solid #e5e7eb;">${safeHtml(booking.check_in)}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #e5e7eb;">Check-out</td><td style="padding: 8px; border: 1px solid #e5e7eb;">${safeHtml(booking.check_out)}</td></tr>
       </table>
       <p>Our admin will review your evidence and confirm your booking once payment is verified.</p>
       <p>Thank you,<br/><strong>Abobby Nwa Hotel & Suites</strong></p>
@@ -98,12 +106,12 @@ export const sendContactEmails = async ({ name, email, phone, subject, message }
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
         <h2>New Contact Message</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
-        <p><strong>Subject:</strong> ${contactSubject}</p>
+        <p><strong>Name:</strong> ${safeHtml(name)}</p>
+        <p><strong>Email:</strong> ${safeHtml(email)}</p>
+        <p><strong>Phone:</strong> ${safeHtml(phone || 'Not provided')}</p>
+        <p><strong>Subject:</strong> ${safeHtml(contactSubject)}</p>
         <p><strong>Message:</strong></p>
-        <div style="padding: 12px; background: #f3f4f6; border-radius: 8px;">${message}</div>
+        <div style="padding: 12px; background: #f3f4f6; border-radius: 8px;">${safeHtml(message)}</div>
       </div>
     `
   });
@@ -116,11 +124,11 @@ export const sendContactEmails = async ({ name, email, phone, subject, message }
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
         <h2>Message Received</h2>
-        <p>Hello <strong>${name}</strong>,</p>
+        <p>Hello <strong>${safeHtml(name)}</strong>,</p>
         <p>Thank you for contacting <strong>Abobby Nwa Hotel & Suites</strong>.</p>
         <p>We have received your message and our team will get back to you as soon as possible.</p>
         <p><strong>Your message:</strong></p>
-        <div style="padding: 12px; background: #f3f4f6; border-radius: 8px;">${message}</div>
+        <div style="padding: 12px; background: #f3f4f6; border-radius: 8px;">${safeHtml(message)}</div>
         <p>Thank you,<br/><strong>Abobby Nwa Hotel & Suites</strong></p>
       </div>
     `
@@ -147,8 +155,29 @@ export const sendContactReplyEmail = async ({ to, name, replyMessage }) => {
     text: `Hello ${name},\n\n${replyMessage}\n\nThank you,\nAbobby Nwa Hotel & Suites`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
-        <p>Hello <strong>${name}</strong>,</p>
-        <div style="padding: 12px; background: #f3f4f6; border-radius: 8px;">${replyMessage}</div>
+        <p>Hello <strong>${safeHtml(name)}</strong>,</p>
+        <div style="padding: 12px; background: #f3f4f6; border-radius: 8px;">${safeHtml(replyMessage)}</div>
+        <p>Thank you,<br/><strong>Abobby Nwa Hotel & Suites</strong></p>
+      </div>
+    `
+  });
+};
+
+export const sendAdminDirectEmail = async ({ to, name, subject, message }) => {
+  const emailUser = getEmailUser();
+  const safeSubject = subject || 'Message from Abobby Nwa Hotel & Suites';
+  const safeName = name || 'Guest';
+
+  return sendSafeMail({
+    from: `Abobby Nwa Hotel & Suites <${emailUser}>`,
+    to,
+    subject: safeSubject,
+    text: `Hello ${safeName},\n\n${message}\n\nThank you,\nAbobby Nwa Hotel & Suites`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
+        <h2>${safeHtml(safeSubject)}</h2>
+        <p>Hello <strong>${safeHtml(safeName)}</strong>,</p>
+        <div style="padding: 14px; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px;">${safeHtml(message)}</div>
         <p>Thank you,<br/><strong>Abobby Nwa Hotel & Suites</strong></p>
       </div>
     `
