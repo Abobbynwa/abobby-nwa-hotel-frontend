@@ -34,6 +34,20 @@ const safeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (m) => ({
   "'": '&#039;'
 }[m]));
 
+const formatMoney = (value) => `₦${Number(value || 0).toLocaleString()}`;
+
+const formatDate = (value) => {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+};
+
 const sendSafeMail = async (mailOptions) => {
   const transporter = createTransporter();
 
@@ -42,8 +56,102 @@ const sendSafeMail = async (mailOptions) => {
     return { sent: false, reason: 'missing_email_config' };
   }
 
-  await transporter.sendMail(mailOptions);
-  return { sent: true };
+  const info = await transporter.sendMail(mailOptions);
+  console.log('Email sent:', {
+    to: mailOptions.to,
+    subject: mailOptions.subject,
+    messageId: info.messageId
+  });
+  return { sent: true, messageId: info.messageId };
+};
+
+const bookingTableHtml = (booking) => `
+  <table style="border-collapse: collapse; width: 100%; max-width: 620px; margin: 14px 0;">
+    <tr><td style="padding: 10px; border: 1px solid #e5e7eb; background:#f8fafc;">Booking Reference</td><td style="padding: 10px; border: 1px solid #e5e7eb;"><strong>${safeHtml(booking.reference)}</strong></td></tr>
+    <tr><td style="padding: 10px; border: 1px solid #e5e7eb; background:#f8fafc;">Guest Name</td><td style="padding: 10px; border: 1px solid #e5e7eb;">${safeHtml(booking.full_name || booking.fullName)}</td></tr>
+    <tr><td style="padding: 10px; border: 1px solid #e5e7eb; background:#f8fafc;">Room</td><td style="padding: 10px; border: 1px solid #e5e7eb;">${safeHtml(booking.room_name || booking.room_type || booking.roomType || 'Selected room')}</td></tr>
+    <tr><td style="padding: 10px; border: 1px solid #e5e7eb; background:#f8fafc;">Check-in</td><td style="padding: 10px; border: 1px solid #e5e7eb;">${safeHtml(formatDate(booking.check_in || booking.checkIn))}</td></tr>
+    <tr><td style="padding: 10px; border: 1px solid #e5e7eb; background:#f8fafc;">Check-out</td><td style="padding: 10px; border: 1px solid #e5e7eb;">${safeHtml(formatDate(booking.check_out || booking.checkOut))}</td></tr>
+    <tr><td style="padding: 10px; border: 1px solid #e5e7eb; background:#f8fafc;">Guests</td><td style="padding: 10px; border: 1px solid #e5e7eb;">${safeHtml(booking.guests || booking.number_of_guests || '-')}</td></tr>
+    <tr><td style="padding: 10px; border: 1px solid #e5e7eb; background:#f8fafc;">Total</td><td style="padding: 10px; border: 1px solid #e5e7eb;"><strong>${formatMoney(booking.total)}</strong></td></tr>
+  </table>
+`;
+
+export const sendBookingCreatedEmail = async (booking) => {
+  const emailUser = getEmailUser();
+  const guestName = booking.full_name || booking.fullName || 'Guest';
+
+  return sendSafeMail({
+    from: `Abobby Nwa Hotel & Suites <${emailUser}>`,
+    to: booking.email,
+    subject: `Booking Received - ${booking.reference}`,
+    text: `Hello ${guestName},
+
+Thank you for booking with Abobby Nwa Hotel & Suites.
+
+Your booking has been received and is awaiting payment/confirmation.
+
+Booking Reference: ${booking.reference}
+Room: ${booking.room_name || booking.room_type || booking.roomType || 'Selected room'}
+Check-in: ${formatDate(booking.check_in || booking.checkIn)}
+Check-out: ${formatDate(booking.check_out || booking.checkOut)}
+Guests: ${booking.guests || '-'}
+Total: ${formatMoney(booking.total)}
+
+Please keep your booking reference safe.
+
+Thank you,
+Abobby Nwa Hotel & Suites`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
+        <h2>Booking Received</h2>
+        <p>Hello <strong>${safeHtml(guestName)}</strong>,</p>
+        <p>Thank you for booking with <strong>Abobby Nwa Hotel & Suites</strong>.</p>
+        <p>Your booking has been received and is awaiting payment/confirmation.</p>
+        ${bookingTableHtml(booking)}
+        <p>Please keep your booking reference safe.</p>
+        <p>Thank you,<br/><strong>Abobby Nwa Hotel & Suites</strong></p>
+      </div>
+    `
+  });
+};
+
+export const sendBookingStatusEmail = async (booking, statusType = 'updated') => {
+  const emailUser = getEmailUser();
+  const guestName = booking.full_name || booking.fullName || 'Guest';
+
+  const statusText = statusType === 'confirmed'
+    ? 'Your booking has been confirmed.'
+    : statusType === 'cancelled'
+      ? 'Your booking has been cancelled.'
+      : 'Your booking has been updated.';
+
+  return sendSafeMail({
+    from: `Abobby Nwa Hotel & Suites <${emailUser}>`,
+    to: booking.email,
+    subject: `Booking ${statusType === 'confirmed' ? 'Confirmed' : statusType === 'cancelled' ? 'Cancelled' : 'Updated'} - ${booking.reference}`,
+    text: `Hello ${guestName},
+
+${statusText}
+
+Booking Reference: ${booking.reference}
+Room: ${booking.room_name || booking.room_type || booking.roomType || 'Selected room'}
+Check-in: ${formatDate(booking.check_in || booking.checkIn)}
+Check-out: ${formatDate(booking.check_out || booking.checkOut)}
+Total: ${formatMoney(booking.total)}
+
+Thank you,
+Abobby Nwa Hotel & Suites`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
+        <h2>Booking ${safeHtml(statusType === 'confirmed' ? 'Confirmed' : statusType === 'cancelled' ? 'Cancelled' : 'Updated')}</h2>
+        <p>Hello <strong>${safeHtml(guestName)}</strong>,</p>
+        <p>${safeHtml(statusText)}</p>
+        ${bookingTableHtml(booking)}
+        <p>Thank you,<br/><strong>Abobby Nwa Hotel & Suites</strong></p>
+      </div>
+    `
+  });
 };
 
 export const sendTransferEvidenceConfirmation = async (booking) => {
@@ -57,9 +165,9 @@ We have received your payment evidence for your booking at Abobby Nwa Hotel & Su
 Booking Reference: ${booking.reference}
 Payment Status: Pending Review
 Booking Status: Pending
-Amount: ₦${Number(booking.total || 0).toLocaleString()}
-Check-in: ${booking.check_in}
-Check-out: ${booking.check_out}
+Amount: ${formatMoney(booking.total)}
+Check-in: ${formatDate(booking.check_in)}
+Check-out: ${formatDate(booking.check_out)}
 
 Our admin will review your evidence and confirm your booking once payment is verified.
 
@@ -71,13 +179,7 @@ Abobby Nwa Hotel & Suites`;
       <h2>Payment Evidence Received</h2>
       <p>Hello <strong>${safeHtml(booking.full_name)}</strong>,</p>
       <p>We have received your payment evidence for your booking at <strong>Abobby Nwa Hotel & Suites</strong>.</p>
-      <table style="border-collapse: collapse; width: 100%; max-width: 560px;">
-        <tr><td style="padding: 8px; border: 1px solid #e5e7eb;">Booking Reference</td><td style="padding: 8px; border: 1px solid #e5e7eb;"><strong>${safeHtml(booking.reference)}</strong></td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #e5e7eb;">Payment Status</td><td style="padding: 8px; border: 1px solid #e5e7eb;">Pending Review</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #e5e7eb;">Amount</td><td style="padding: 8px; border: 1px solid #e5e7eb;">₦${Number(booking.total || 0).toLocaleString()}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #e5e7eb;">Check-in</td><td style="padding: 8px; border: 1px solid #e5e7eb;">${safeHtml(booking.check_in)}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #e5e7eb;">Check-out</td><td style="padding: 8px; border: 1px solid #e5e7eb;">${safeHtml(booking.check_out)}</td></tr>
-      </table>
+      ${bookingTableHtml(booking)}
       <p>Our admin will review your evidence and confirm your booking once payment is verified.</p>
       <p>Thank you,<br/><strong>Abobby Nwa Hotel & Suites</strong></p>
     </div>
