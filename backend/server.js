@@ -10,6 +10,7 @@ import bookingRoutes from './routes/bookingRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import staffRoutes from './routes/staffRoutes.js';
+import expenseRoutes from './routes/expenseRoutes.js';
 
 dotenv.config();
 
@@ -54,6 +55,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/staff', staffRoutes);
+app.use('/api/expenses', expenseRoutes);
 
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin-tabbed.html'));
@@ -91,6 +93,7 @@ app.get('/api/health', (req, res) => {
       payments: '/api/payments',
       contact: '/api/contact',
       staff: '/api/staff',
+      expenses: '/api/expenses',
       admin: '/admin',
       staffPortal: '/staff'
     }
