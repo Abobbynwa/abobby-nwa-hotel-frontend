@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff ERP Portal - Abobby Nwa Hotel</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#07111f;color:#eef2ff;min-height:100vh}.hidden{display:none!important}.shell{min-height:100vh;display:grid;grid-template-columns:280px 1fr}.side{background:linear-gradient(180deg,#050816,#111827);border-right:1px solid rgba(255,255,255,.08);padding:24px;position:sticky;top:0;height:100vh}.brand{display:flex;gap:12px;align-items:center;margin-bottom:28px}.logo{width:44px;height:44px;border-radius:16px;background:linear-gradient(135deg,#d4af37,#f8fafc);color:#111827;display:grid;place-items:center;font-weight:900}.brand h1{font-size:17px;margin:0}.brand p{margin:4px 0 0;color:#94a3b8;font-size:12px}.profile{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:16px;margin-bottom:20px}.profile b{display:block;font-size:15px}.profile span{display:inline-block;margin-top:8px;padding:6px 10px;border-radius:999px;background:rgba(212,175,55,.16);color:#facc15;font-size:12px;text-transform:capitalize}.nav button{width:100%;border:0;background:transparent;color:#cbd5e1;text-align:left;padding:13px 14px;border-radius:14px;font-weight:700;cursor:pointer;margin-bottom:6px}.nav button.active,.nav button:hover{background:rgba(212,175,55,.16);color:#fff}.logout{margin-top:18px;width:100%;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.12);color:#fecaca;border-radius:14px;padding:12px;font-weight:800;cursor:pointer}.main{padding:28px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:22px}.top h2{font-size:28px;margin:0}.top p{color:#94a3b8;margin:7px 0 0}.pill{padding:10px 14px;background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.3);color:#bbf7d0;border-radius:999px;font-weight:800}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:22px}.card{background:rgba(15,23,42,.78);border:1px solid rgba(255,255,255,.09);border-radius:24px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.25)}.card small{color:#94a3b8}.card strong{display:block;font-size:24px;margin-top:10px}.panel{background:rgba(15,23,42,.78);border:1px solid rgba(255,255,255,.09);border-radius:26px;padding:22px;margin-bottom:18px}.panel h3{margin:0 0 14px}.role-box{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.list{display:grid;gap:10px}.task{padding:14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}.task b{display:block;margin-bottom:5px}.task span{color:#94a3b8;font-size:13px}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:13px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}.table th{color:#94a3b8;font-size:12px;text-transform:uppercase}.login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at top,#1e293b,#020617 65%)}.login{width:min(430px,100%);background:rgba(15,23,42,.9);border:1px solid rgba(255,255,255,.1);border-radius:28px;padding:28px;box-shadow:0 30px 90px rgba(0,0,0,.45)}.login h1{margin:0 0 8px}.login p{color:#94a3b8;margin:0 0 20px}.field{margin-bottom:14px}.field label{display:block;font-size:13px;color:#cbd5e1;margin-bottom:7px}.field input{width:100%;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:#020617;color:#fff}.primary{width:100%;border:0;background:linear-gradient(135deg,#d4af37,#facc15);color:#111827;font-weight:900;border-radius:16px;padding:14px;cursor:pointer}.alert{margin-top:12px;padding:12px;border-radius:14px;background:rgba(248,113,113,.15);color:#fecaca;display:none}@media(max-width:900px){.shell{grid-template-columns:1fr}.side{position:relative;height:auto}.grid,.role-box{grid-template-columns:1fr}.main{padding:18px}.top{display:block}}
+  </style>
+</head>
+<body>
+  <section id="loginView" class="login-wrap">
+    <form id="loginForm" class="login">
+      <div class="brand"><div class="logo">A</div><div><h1>Abobby Nwa Hotel</h1><p>Staff ERP Portal</p></div></div>
+      <h1>Staff Login</h1>
+      <p>Login with the account created by Admin. Your dashboard will open based on your role.</p>
+      <div class="field"><label>Email</label><input id="email" type="email" required placeholder="staff@hotel.com" /></div>
+      <div class="field"><label>Password</label><input id="password" type="password" required placeholder="••••••••" /></div>
+      <button class="primary" type="submit">Open My Dashboard</button>
+      <div id="loginAlert" class="alert"></div>
+    </form>
+  </section>
+
+  <section id="appView" class="shell hidden">
+    <aside class="side">
+      <div class="brand"><div class="logo">A</div><div><h1>Abobby Nwa Hotel</h1><p>Role ERP Portal</p></div></div>
+      <div class="profile"><b id="staffName">Staff</b><small id="staffEmail"></small><span id="staffRole">role</span></div>
+      <nav class="nav" id="nav"></nav>
+      <button class="logout" id="logoutBtn">Logout</button>
+    </aside>
+    <main class="main">
+      <div class="top"><div><h2 id="pageTitle">Dashboard</h2><p id="pageDesc">Your role-based hotel ERP workspace.</p></div><div class="pill" id="salaryPill">Salary: ₦0</div></div>
+      <div class="grid" id="cards"></div>
+      <section class="panel"><h3 id="roleTitle">My Work</h3><div class="role-box"><div class="list" id="tasks"></div><div class="card"><small>Performance Score</small><strong id="score">0</strong><p style="color:#94a3b8">Your score will grow as actions are connected to your role.</p></div></div></section>
+      <section class="panel" id="teamPanel"><h3>Team Overview</h3><table class="table"><thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Salary</th></tr></thead><tbody id="teamRows"></tbody></table></section>
+    </main>
+  </section>
+
+<script>
+const API = '/api';
+const money = v => '₦' + Number(v || 0).toLocaleString();
+const roleTasks = {
+  admin: ['Create staff accounts','Assign roles and salaries','Monitor performance','Review finance and operations'],
+  accountant: ['Confirm booking payments','Record hotel expenses','Review staff salary list','Prepare profit/loss report'],
+  manager: ['Supervise staff performance','Check booking flow','Monitor room status','Approve operational tasks'],
+  receptionist: ['Handle bookings','Check guests in and out','Reply customer messages','Update front desk notes'],
+  housekeeping: ['View rooms assigned for cleaning','Mark rooms cleaned','Report damaged items','Update room readiness'],
+  maintenance: ['View repair tasks','Update repair progress','Report materials needed','Close completed repairs']
+};
+const roleCards = {
+  admin: ['Full Control','Staff Overview','Financial Reports','Hotel Operations'],
+  accountant: ['Payments','Expenses','Salary Records','Profit/Loss'],
+  manager: ['Team Performance','Bookings Summary','Room Status','Approvals'],
+  receptionist: ['Bookings','Guest Messages','Check-in/out','Today Desk'],
+  housekeeping: ['Rooms to Clean','Cleaned Rooms','Damage Reports','Pending Tasks'],
+  maintenance: ['Open Repairs','Completed Repairs','Materials Needed','Room Issues']
+};
+function token(){return localStorage.getItem('hotelToken')||''}
+async function api(path, options={}){const res=await fetch(API+path,{...options,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token(),...(options.headers||{})}});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||'Request failed');return data}
+function showLogin(msg=''){document.getElementById('loginView').classList.remove('hidden');document.getElementById('appView').classList.add('hidden');if(msg){const a=document.getElementById('loginAlert');a.textContent=msg;a.style.display='block'}}
+function showApp(){document.getElementById('loginView').classList.add('hidden');document.getElementById('appView').classList.remove('hidden')}
+function renderNav(role){const items=['Dashboard','My Profile','My Performance'];if(['admin','accountant','manager'].includes(role))items.push('Team Overview');document.getElementById('nav').innerHTML=items.map((x,i)=>`<button class="${i===0?'active':''}">${x}</button>`).join('')}
+function renderDashboard(profile, performance=[]){const role=(profile.role||'staff').toLowerCase();document.getElementById('staffName').textContent=profile.name||'Staff';document.getElementById('staffEmail').textContent=profile.email||'';document.getElementById('staffRole').textContent=role;document.getElementById('pageTitle').textContent=role.charAt(0).toUpperCase()+role.slice(1)+' Dashboard';document.getElementById('pageDesc').textContent='You are seeing only the tools and salary access allowed for your role.';document.getElementById('salaryPill').textContent='My Salary: '+money(profile.salary);renderNav(role);document.getElementById('cards').innerHTML=(roleCards[role]||roleCards.receptionist).map((c,i)=>`<div class="card"><small>${c}</small><strong>${i===0?'Ready':'0'}</strong></div>`).join('');document.getElementById('tasks').innerHTML=(roleTasks[role]||[]).map(t=>`<div class="task"><b>${t}</b><span>Module foundation ready. Detailed actions will be connected in the next phase.</span></div>`).join('');const totalScore=(performance||[]).reduce((sum,x)=>sum+Number(x.score||0),0);document.getElementById('score').textContent=totalScore;document.getElementById('teamPanel').style.display=['admin','accountant','manager'].includes(role)?'block':'none'}
+async function loadTeam(){try{const data=await api('/staff');document.getElementById('teamRows').innerHTML=(data.staff||[]).map(s=>`<tr><td>${s.name}</td><td>${s.role}</td><td>${s.status||'active'}</td><td>${s.salary===null||s.salary===undefined?'Hidden':money(s.salary)}</td></tr>`).join('')||'<tr><td colspan="4">No staff yet.</td></tr>'}catch(e){document.getElementById('teamRows').innerHTML='<tr><td colspan="4">Team overview not allowed for this role.</td></tr>'}}
+async function boot(){if(!token())return showLogin();try{const data=await api('/staff/me');showApp();renderDashboard(data.profile,data.performance);loadTeam()}catch(e){localStorage.removeItem('hotelToken');showLogin(e.message)}}
+document.getElementById('loginForm').addEventListener('submit',async e=>{e.preventDefault();const alert=document.getElementById('loginAlert');alert.style.display='none';try{const data=await fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email.value,password:password.value})}).then(r=>r.json().then(d=>{if(!r.ok)throw new Error(d.message||'Login failed');return d}));localStorage.setItem('hotelToken',data.token);localStorage.setItem('hotelUser',JSON.stringify(data.user));if((data.user.role||'').toLowerCase()==='admin') location.href='/admin'; else boot()}catch(err){alert.textContent=err.message;alert.style.display='block'}});
+document.getElementById('logoutBtn').addEventListener('click',()=>{localStorage.removeItem('hotelToken');localStorage.removeItem('hotelUser');showLogin()});
+boot();
+</script>
+</body>
+</html>
