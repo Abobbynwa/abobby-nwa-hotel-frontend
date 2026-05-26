@@ -15,6 +15,47 @@ const initDatabase = async () => {
         email VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
         role VARCHAR(50) DEFAULT 'user',
+        phone VARCHAR(50),
+        salary INTEGER DEFAULT 0,
+        department VARCHAR(100),
+        job_title VARCHAR(150),
+        address TEXT,
+        emergency_contact VARCHAR(150),
+        employment_date DATE,
+        status VARCHAR(50) DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50);`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS salary INTEGER DEFAULT 0;`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100);`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS job_title VARCHAR(150);`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT;`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS emergency_contact VARCHAR(150);`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS employment_date DATE;`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'active';`);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS staff_performance (
+        id SERIAL PRIMARY KEY,
+        staff_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        action_type VARCHAR(100) NOT NULL,
+        action_note TEXT,
+        score INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS expenses (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        category VARCHAR(100) NOT NULL,
+        amount INTEGER NOT NULL,
+        expense_date DATE DEFAULT CURRENT_DATE,
+        note TEXT,
+        created_by INTEGER REFERENCES users(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -76,8 +117,8 @@ const initDatabase = async () => {
     if (adminExists.rows.length === 0) {
       const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
       await pool.query(
-        'INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)',
-        ['Admin', process.env.ADMIN_EMAIL, hashedPassword, 'admin']
+        'INSERT INTO users (name, email, password, role, department, job_title, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        ['Admin', process.env.ADMIN_EMAIL, hashedPassword, 'admin', 'Administration', 'System Administrator', 'active']
       );
       console.log('✅ Admin user created!');
     }
