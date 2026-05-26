@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { hasBrevo, sendViaBrevo } from './brevoProvider.js';
 import { hasResend, sendViaResend } from './resendProvider.js';
 
 const getEmailUser = () => (process.env.EMAIL_USER || '').trim();
@@ -53,6 +54,7 @@ const sendSmtp = async (mailOptions) => {
 
 const sendSafeMail = async (mailOptions) => {
   const finalMail = { ...mailOptions, from: mailOptions.from || fromLine() };
+  if (hasBrevo()) return sendViaBrevo(finalMail);
   if (hasResend()) return sendViaResend(finalMail);
   return sendSmtp(finalMail);
 };
