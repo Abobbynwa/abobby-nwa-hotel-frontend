@@ -9,6 +9,7 @@ import roomRoutes from './routes/roomRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
+import staffRoutes from './routes/staffRoutes.js';
 
 dotenv.config();
 
@@ -52,9 +53,14 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/staff', staffRoutes);
 
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin-tabbed.html'));
+});
+
+app.get('/staff', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'staff-dashboard.html'));
 });
 
 app.get('/admin-clean', (req, res) => {
@@ -84,7 +90,9 @@ app.get('/api/health', (req, res) => {
       bookings: '/api/bookings',
       payments: '/api/payments',
       contact: '/api/contact',
-      admin: '/admin'
+      staff: '/api/staff',
+      admin: '/admin',
+      staffPortal: '/staff'
     }
   });
 });
@@ -95,7 +103,8 @@ app.get('/', (req, res) => {
     status: 'healthy',
     endpoints: {
       api: '/api/health',
-      admin: '/admin'
+      admin: '/admin',
+      staff: '/staff'
     }
   });
 });
@@ -130,5 +139,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Admin Dashboard: http://localhost:${PORT}/admin`);
+  console.log(`Staff Portal: http://localhost:${PORT}/staff`);
   console.log(`API Health: http://localhost:${PORT}/api/health`);
 });
