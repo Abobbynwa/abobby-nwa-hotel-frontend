@@ -11,6 +11,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import staffRoutes from './routes/staffRoutes.js';
 import expenseRoutes from './routes/expenseRoutes.js';
+import inventoryRoutes from './routes/inventoryRoutes.js';
 
 dotenv.config();
 
@@ -56,6 +57,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin-tabbed.html'));
@@ -94,6 +96,7 @@ app.get('/api/health', (req, res) => {
       contact: '/api/contact',
       staff: '/api/staff',
       expenses: '/api/expenses',
+      inventory: '/api/inventory',
       admin: '/admin',
       staffPortal: '/staff'
     }
