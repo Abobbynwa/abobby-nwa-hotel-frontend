@@ -10,7 +10,8 @@ export const protect = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
       const result = await pool.query(
-        'SELECT id, name, email, role FROM users WHERE id = $1',
+        `SELECT id, name, email, role, phone, salary, department, job_title, status
+         FROM users WHERE id = $1`,
         [decoded.id]
       );
 
@@ -18,7 +19,12 @@ export const protect = async (req, res, next) => {
         return res.status(401).json({ message: 'Not authorized, user not found' });
       }
 
-      req.user = result.rows[0];
+      const user = result.rows[0];
+      if (user.status && user.status !== 'active') {
+        return res.status(403).json({ message: 'Account is not active. Contact admin.' });
+      }
+
+      req.user = user;
       next();
     } catch (error) {
       return res.status(401).json({ message: 'Not authorized, token failed' });
@@ -36,4 +42,9 @@ export const admin = (req, res, next) => {
   } else {
     res.status(403).json({ message: 'Not authorized as admin' });
   }
+};
+
+export const allowRoles = (...roles) => (req, res, next) => {
+  if (req.user && roles.includes(req.user.role)) return next();
+  return res.status(403).json({ message: 'You do not have permission for this action' });
 };
