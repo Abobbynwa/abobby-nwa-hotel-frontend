@@ -63,6 +63,10 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin-tabbed.html'));
 });
 
+app.get('/erp', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'erp-dashboard.html'));
+});
+
 app.get('/staff', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'staff-dashboard.html'));
 });
@@ -98,6 +102,7 @@ app.get('/api/health', (req, res) => {
       expenses: '/api/expenses',
       inventory: '/api/inventory',
       admin: '/admin',
+      erp: '/erp',
       staffPortal: '/staff'
     }
   });
@@ -110,6 +115,7 @@ app.get('/', (req, res) => {
     endpoints: {
       api: '/api/health',
       admin: '/admin',
+      erp: '/erp',
       staff: '/staff'
     }
   });
@@ -145,6 +151,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Admin Dashboard: http://localhost:${PORT}/admin`);
+  console.log(`ERP Workspace: http://localhost:${PORT}/erp`);
   console.log(`Staff Portal: http://localhost:${PORT}/staff`);
   console.log(`API Health: http://localhost:${PORT}/api/health`);
 });
