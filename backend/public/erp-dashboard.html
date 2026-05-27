@@ -5,44 +5,226 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ERP Workspace - Abobby Nwa Hotel</title>
   <style>
-    *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#1f2937}header{background:#111827;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:10}header h1{margin:0;font-size:22px}main{padding:24px;max-width:1280px;margin:0 auto}.card{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.06);padding:20px;margin-bottom:20px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}label{display:block;font-weight:700;margin-bottom:6px}input,textarea,select{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:10px;font-size:14px;background:#fff}textarea{min-height:80px}button,.btn{border:0;padding:10px 14px;border-radius:10px;background:#111827;color:#fff;cursor:pointer;font-weight:700;margin:2px;text-decoration:none;display:inline-block}button.secondary,.btn.secondary{background:#4b5563}button.danger{background:#dc2626}button.success{background:#059669}button.warning{background:#d97706}.hidden{display:none!important}.admin-alert{padding:12px 14px;border-radius:12px;margin-bottom:16px;font-weight:700;display:none}.admin-alert.success{display:block;background:#dcfce7;color:#166534;border:1px solid #86efac}.admin-alert.error{display:block;background:#fee2e2;color:#991b1b;border:1px solid #fecaca}table{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden}th,td{padding:12px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}th{background:#f9fafb}.table-wrap{overflow-x:auto}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#e5e7eb;font-size:12px;font-weight:700}.pill.paid,.pill.confirmed,.pill.available,.pill.replied{background:#d1fae5;color:#047857}.pill.unpaid,.pill.pending,.pill.new,.pill.pending_review{background:#fef3c7;color:#92400e}.pill.cancelled,.pill.unavailable{background:#fee2e2;color:#991b1b}.section-title,.pager{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.toolbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0 16px;align-items:end}.muted{color:#6b7280;font-size:14px}.hero{background:linear-gradient(135deg,#111827,#1f2937);color:#fff;border-radius:24px;padding:28px;margin-bottom:22px;box-shadow:0 18px 45px rgba(15,23,42,.18)}.hero h2{font-size:30px;margin:0 0 8px}.hero p{margin:0;color:#cbd5e1}.top-actions{display:flex;gap:10px;flex-wrap:wrap}.login-box{max-width:440px;margin:80px auto}.login-box h2{margin-top:0}.status{font-weight:800;margin-top:10px}.status.error{color:#dc2626}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#07111f;color:#e5e7eb;min-height:100vh}.hidden{display:none!important}button,.btn{border:0;padding:12px 16px;border-radius:14px;background:#111827;color:#fff;cursor:pointer;font-weight:900;text-decoration:none;display:inline-flex;align-items:center;gap:8px}button.secondary,.btn.secondary{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14)}button.success{background:#059669}button.warning{background:#d97706}button.danger{background:#dc2626}input,textarea,select{width:100%;padding:12px;border:1px solid rgba(148,163,184,.35);border-radius:12px;font-size:14px;background:#fff;color:#111827}textarea{min-height:80px}label{display:block;font-weight:800;margin-bottom:6px;color:#dbeafe}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.card{background:#fff;color:#111827;border-radius:22px;box-shadow:0 18px 50px rgba(0,0,0,.16);padding:20px;margin-bottom:18px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;border-radius:14px;overflow:hidden}th,td{padding:12px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}th{background:#f9fafb}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#e5e7eb;font-size:12px;font-weight:800}.pill.paid,.pill.confirmed,.pill.available,.pill.replied{background:#d1fae5;color:#047857}.pill.pending,.pill.unpaid,.pill.pending_review{background:#fef3c7;color:#92400e}.pill.cancelled,.pill.unavailable{background:#fee2e2;color:#991b1b}.muted{color:#64748b}.section-title,.pager{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.toolbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0 16px;align-items:end}.admin-alert{padding:12px 14px;border-radius:12px;margin-bottom:16px;font-weight:800;display:none}.admin-alert.success{display:block;background:#dcfce7;color:#166534;border:1px solid #86efac}.admin-alert.error{display:block;background:#fee2e2;color:#991b1b;border:1px solid #fecaca}.shell{min-height:100vh}.topbar{position:sticky;top:0;z-index:30;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 24px;background:rgba(7,17,31,.86);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.08)}.brand{display:flex;align-items:center;gap:12px}.logo{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,#d4af37,#facc15);color:#111827;display:grid;place-items:center;font-weight:1000}.brand h1{font-size:20px;margin:0;color:#fff}.brand p{margin:3px 0 0;color:#94a3b8;font-size:12px}.top-actions{display:flex;gap:10px;flex-wrap:wrap}.auth-wrap{min-height:calc(100vh - 84px);display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 10% 10%,rgba(212,175,55,.22),transparent 30%),radial-gradient(circle at 90% 0%,rgba(59,130,246,.22),transparent 32%)}.auth-card{width:min(520px,100%);background:rgba(15,23,42,.88);border:1px solid rgba(255,255,255,.1);border-radius:30px;padding:28px;box-shadow:0 30px 90px rgba(0,0,0,.38)}.auth-card h2{font-size:34px;margin:0 0 8px;color:#fff;letter-spacing:-.04em}.auth-card p{color:#94a3b8;margin:0 0 22px;line-height:1.6}.auth-card form{display:grid;gap:14px}.auth-card input{min-height:52px;background:#020617;color:#fff;border-color:rgba(255,255,255,.14)}.auth-card .primary{background:linear-gradient(135deg,#d4af37,#facc15);color:#111827;justify-content:center}.status{font-weight:900;margin-top:10px}.status.error{color:#fecaca}.status.success{color:#bbf7d0}.dashboard{padding:26px;max-width:1320px;margin:0 auto}.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#111827,#1e293b 55%,#3b2f0b);border:1px solid rgba(255,255,255,.1);border-radius:34px;padding:34px;margin-bottom:22px;box-shadow:0 24px 70px rgba(0,0,0,.28)}.hero:after{content:'';position:absolute;right:-80px;top:-80px;width:260px;height:260px;background:radial-gradient(circle,rgba(250,204,21,.38),transparent 65%)}.hero h2{font-size:40px;margin:0 0 8px;color:#fff;letter-spacing:-.05em}.hero p{color:#cbd5e1;margin:0;max-width:760px;line-height:1.65}.hero-row{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;position:relative;z-index:1}.access-badge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);padding:12px 14px;border-radius:999px;color:#fef3c7;font-weight:900}.module-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}.module-card{background:rgba(255,255,255,.96);color:#111827;border-radius:28px;padding:24px;border:1px solid rgba(226,232,240,.8);box-shadow:0 18px 55px rgba(0,0,0,.16);cursor:pointer;transition:.18s ease;min-height:190px;display:flex;flex-direction:column;justify-content:space-between}.module-card:hover{transform:translateY(-4px);box-shadow:0 28px 70px rgba(0,0,0,.22)}.module-icon{font-size:36px}.module-card h3{font-size:23px;margin:12px 0 8px}.module-card p{color:#64748b;line-height:1.55;margin:0}.module-card span{margin-top:18px;font-weight:1000;color:#111827}.erp-hidden-zone{display:none}.modal{position:fixed;inset:0;background:rgba(2,6,23,.76);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:28px;overflow:auto}.modal.show{display:flex}.modal-panel{width:min(1240px,100%);background:#f8fafc;color:#111827;border-radius:28px;box-shadow:0 35px 100px rgba(0,0,0,.5);overflow:hidden}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:16px;background:#111827;color:#fff;padding:18px 22px}.modal-head h2{margin:0;font-size:22px}.modal-close{width:44px;height:44px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;font-size:24px;line-height:1}.modal-body{padding:22px}.modal-body>.card{box-shadow:none;border:1px solid #e5e7eb}.module-placeholder{padding:24px;text-align:center;color:#64748b}.erp-home-note{margin-top:22px;background:rgba(15,23,42,.72);border:1px solid rgba(255,255,255,.08);border-radius:26px;padding:22px;color:#dbeafe}.erp-home-note h3{margin:0 0 8px;color:#fff}@media(max-width:760px){.topbar{align-items:flex-start}.hero h2{font-size:30px}.dashboard{padding:16px}.modal{padding:10px}.modal-body{padding:14px}}
   </style>
 </head>
 <body>
-  <header>
-    <h1>🏨 Abobby Nwa Hotel ERP</h1>
-    <div class="top-actions">
-      <a class="btn secondary" href="/admin">Back to Admin</a>
-      <a class="btn secondary" href="/staff">Staff Portal</a>
-      <button id="logoutBtn" class="secondary hidden">Logout</button>
-    </div>
-  </header>
-
-  <main>
-    <section id="loginSection" class="card login-box">
-      <h2>Admin / ERP Login</h2>
-      <p class="muted">Login with Admin, Accountant, or Manager account to access ERP modules.</p>
-      <form id="loginForm" class="grid">
-        <div><label>Email</label><input id="email" type="email" required></div>
-        <div><label>Password</label><input id="password" type="password" required></div>
-        <div style="align-self:end"><button id="loginBtn" type="submit">Login</button></div>
-      </form>
-      <div id="loginStatus" class="status"></div>
-    </section>
-
-    <section id="dashboardSection" class="hidden">
-      <div id="adminAlert" class="admin-alert"></div>
-      <div class="hero">
-        <h2>ERP Workspace</h2>
-        <p>Manage hotel finance, expenses, inventory/store, and staff accounts from one organized workspace.</p>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="logo">A</div><div><h1>Abobby Nwa Hotel ERP</h1><p>Private management workspace</p></div></div>
+      <div class="top-actions">
+        <a class="btn secondary" href="/admin">Back to Admin</a>
+        <a class="btn secondary" href="/staff">Staff Portal</a>
+        <button id="logoutBtn" class="secondary hidden">Logout</button>
       </div>
-    </section>
-  </main>
+    </header>
 
-  <script src="/admin-assets/admin-login-upgrade.js?v=1"></script>
-  <script src="/admin-assets/admin-expenses-erp.js?v=1"></script>
-  <script src="/admin-assets/admin-inventory-erp.js?v=1"></script>
-  <script src="/admin-assets/admin-staff-erp.js?v=1"></script>
-  <script src="/admin-assets/admin-erp-organizer.js?v=2"></script>
+    <main>
+      <section id="accessSection" class="auth-wrap">
+        <div class="auth-card">
+          <h2>ERP Access ID</h2>
+          <p>Enter your private ERP workspace ID before logging in. This protects the ERP area from casual access.</p>
+          <form id="accessForm">
+            <div><label>Unique ERP ID</label><input id="erpAccessId" inputmode="numeric" placeholder="Enter ERP ID" required></div>
+            <button class="primary" type="submit">Continue to ERP Login</button>
+          </form>
+          <div id="accessStatus" class="status"></div>
+        </div>
+      </section>
+
+      <section id="loginSection" class="auth-wrap hidden">
+        <div class="auth-card">
+          <h2>ERP Login</h2>
+          <p>Login with Admin, Accountant, or Manager account to access the ERP modules.</p>
+          <form id="loginForm">
+            <div><label>Email</label><input id="email" type="email" required></div>
+            <div><label>Password</label><input id="password" type="password" required></div>
+            <button id="loginBtn" class="primary" type="submit">Open ERP Workspace</button>
+          </form>
+          <div id="loginStatus" class="status"></div>
+        </div>
+      </section>
+
+      <section id="dashboardSection" class="dashboard hidden">
+        <div id="adminAlert" class="admin-alert"></div>
+        <div class="hero">
+          <div class="hero-row">
+            <div>
+              <h2>Welcome to ERP Workspace</h2>
+              <p>Choose one module below. Each module opens inside its own workspace window, and you can close it with the X button to return to this homepage.</p>
+            </div>
+            <div class="access-badge">ERP ID: 1622</div>
+          </div>
+        </div>
+
+        <div class="module-grid">
+          <article class="module-card" data-open-module="finance">
+            <div><div class="module-icon">💰</div><h3>Finance & Expenses</h3><p>Track hotel spending, confirmed revenue, total expenses, and profit/loss.</p></div><span>Open Finance →</span>
+          </article>
+          <article class="module-card" data-open-module="inventory">
+            <div><div class="module-icon">📦</div><h3>Inventory / Store</h3><p>Manage bedsheets, towels, soap, drinks, food items, cleaning materials, and room supplies.</p></div><span>Open Inventory →</span>
+          </article>
+          <article class="module-card" data-open-module="staff">
+            <div><div class="module-icon">👥</div><h3>Staff Management</h3><p>Create staff login, assign roles, salaries, status, and manage staff records.</p></div><span>Open Staff →</span>
+          </article>
+        </div>
+
+        <div class="erp-home-note">
+          <h3>Navigation Standard</h3>
+          <p>ERP modules are separated from the main admin panel. Admin remains clean, while finance, inventory, and staff tools stay inside this protected ERP workspace.</p>
+        </div>
+      </section>
+
+      <section id="erpModulePool" class="erp-hidden-zone"></section>
+    </main>
+  </div>
+
+  <div id="moduleModal" class="modal" aria-hidden="true">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h2 id="moduleModalTitle">ERP Module</h2>
+        <button id="moduleCloseBtn" class="modal-close" type="button">×</button>
+      </div>
+      <div id="moduleModalBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <script>
+    const ERP_ID = '1622';
+    const allowedRoles = ['admin', 'accountant', 'manager'];
+    const moduleMap = {
+      finance: { id: 'expenseErpCard', title: 'Finance & Expenses' },
+      inventory: { id: 'inventoryErpCard', title: 'Inventory / Store Management' },
+      staff: { id: 'staffErpCard', title: 'Staff Management' }
+    };
+    const originalParents = {};
+
+    const show = (id) => document.getElementById(id)?.classList.remove('hidden');
+    const hide = (id) => document.getElementById(id)?.classList.add('hidden');
+    const setStatus = (id, text, type = 'error') => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text || '';
+      el.className = `status ${type}`;
+    };
+
+    function getToken(){ return localStorage.getItem('hotelToken') || ''; }
+    function setLoggedIn(data){
+      localStorage.setItem('hotelToken', data.token);
+      localStorage.setItem('abobby_admin_token', data.token);
+      localStorage.setItem('adminToken', data.token);
+      localStorage.setItem('hotelUser', JSON.stringify(data.user));
+    }
+
+    function showDashboard(){
+      hide('accessSection');
+      hide('loginSection');
+      show('dashboardSection');
+      document.getElementById('logoutBtn').classList.remove('hidden');
+      setTimeout(() => {
+        if (window.loadExpenseErp) window.loadExpenseErp();
+        if (window.loadInventoryErp) window.loadInventoryErp();
+        if (window.loadStaffErp) window.loadStaffErp();
+        setTimeout(prepareModules, 900);
+      }, 300);
+    }
+
+    function prepareModules(){
+      const pool = document.getElementById('erpModulePool');
+      Object.values(moduleMap).forEach((module) => {
+        const el = document.getElementById(module.id);
+        if (!el) return;
+        if (!originalParents[module.id]) originalParents[module.id] = el.parentNode;
+        el.style.display = 'none';
+        if (el.parentNode !== pool) pool.appendChild(el);
+      });
+    }
+
+    function openModule(key){
+      const module = moduleMap[key];
+      if (!module) return;
+      const el = document.getElementById(module.id);
+      const body = document.getElementById('moduleModalBody');
+      const title = document.getElementById('moduleModalTitle');
+      if (!el) {
+        body.innerHTML = '<div class="module-placeholder">Module is still loading. Please wait a second and click again.</div>';
+      } else {
+        body.innerHTML = '';
+        el.style.display = 'block';
+        body.appendChild(el);
+      }
+      title.textContent = module.title;
+      document.getElementById('moduleModal').classList.add('show');
+      document.getElementById('moduleModal').setAttribute('aria-hidden', 'false');
+      if (key === 'finance' && window.loadExpenseErp) window.loadExpenseErp();
+      if (key === 'inventory' && window.loadInventoryErp) window.loadInventoryErp();
+      if (key === 'staff' && window.loadStaffErp) window.loadStaffErp();
+    }
+
+    function closeModule(){
+      const body = document.getElementById('moduleModalBody');
+      const pool = document.getElementById('erpModulePool');
+      Object.values(moduleMap).forEach((module) => {
+        const el = document.getElementById(module.id);
+        if (el && body.contains(el)) {
+          el.style.display = 'none';
+          pool.appendChild(el);
+        }
+      });
+      document.getElementById('moduleModal').classList.remove('show');
+      document.getElementById('moduleModal').setAttribute('aria-hidden', 'true');
+    }
+
+    document.getElementById('accessForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const value = document.getElementById('erpAccessId').value.trim();
+      if (value !== ERP_ID) return setStatus('accessStatus', 'Invalid ERP ID. Contact admin.', 'error');
+      localStorage.setItem('erpAccessOk', 'true');
+      setStatus('accessStatus', 'ERP ID accepted.', 'success');
+      hide('accessSection');
+      show('loginSection');
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setStatus('loginStatus', 'Checking login...', 'success');
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: document.getElementById('email').value.trim(), password: document.getElementById('password').value })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.message || 'Login failed');
+        const role = String(data.user?.role || '').toLowerCase();
+        if (!allowedRoles.includes(role)) throw new Error('This ERP workspace is only for Admin, Accountant, or Manager. Use Staff Portal for your role.');
+        setLoggedIn(data);
+        showDashboard();
+      } catch (err) {
+        setStatus('loginStatus', err.message, 'error');
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('hotelToken');
+      localStorage.removeItem('abobby_admin_token');
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('hotelUser');
+      localStorage.removeItem('erpAccessOk');
+      location.reload();
+    });
+
+    document.querySelectorAll('[data-open-module]').forEach((card) => {
+      card.addEventListener('click', () => openModule(card.dataset.openModule));
+    });
+    document.getElementById('moduleCloseBtn').addEventListener('click', closeModule);
+    document.getElementById('moduleModal').addEventListener('click', (e) => { if (e.target.id === 'moduleModal') closeModule(); });
+
+    if (localStorage.getItem('erpAccessOk') === 'true' && getToken()) showDashboard();
+    else if (localStorage.getItem('erpAccessOk') === 'true') { hide('accessSection'); show('loginSection'); }
+  </script>
+  <script src="/admin-assets/admin-expenses-erp.js?v=2"></script>
+  <script src="/admin-assets/admin-inventory-erp.js?v=2"></script>
+  <script src="/admin-assets/admin-staff-erp.js?v=2"></script>
 </body>
 </html>
