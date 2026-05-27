@@ -13,6 +13,7 @@ const ensureUsersTable = async () => {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_pin VARCHAR(20);`);
 };
 
 const ensureAdminUser = async () => {
@@ -38,7 +39,7 @@ const ensureAdminUser = async () => {
   }
 };
 
-// @desc    Login admin
+// @desc    Login admin/staff
 // @route   POST /api/auth/login
 // @access  Public
 export const login = async (req, res) => {
@@ -46,7 +47,7 @@ export const login = async (req, res) => {
     await ensureUsersTable();
     await ensureAdminUser();
 
-    const { email, password } = req.body;
+    const { email, password, pin } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Email and password are required' });
@@ -67,6 +68,18 @@ export const login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
+
+    const role = String(user.role || '').toLowerCase();
+    if (role !== 'admin') {
+      if (!user.staff_pin) {
+        return res.status(403).json({ success: false, message: 'Staff PIN is not set. Contact admin.' });
+      }
+      if (!pin || String(pin).trim() !== String(user.staff_pin)) {
+        return res.status(401).json({ success: false, message: 'Invalid staff PIN' });
+      }
+    }
+
+    await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]).catch(() => null);
 
     const token = generateToken(user.id, user.role || 'admin');
 
