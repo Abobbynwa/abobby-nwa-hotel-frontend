@@ -179,6 +179,34 @@
         font-weight: 600;
       }
 
+      .admin-erp-shortcut {
+        border: 1px solid #dbeafe !important;
+        background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+        color: #fff !important;
+        border-radius: 24px !important;
+        padding: 24px !important;
+        margin-bottom: 20px !important;
+        box-shadow: 0 18px 45px rgba(15,23,42,.18) !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 18px !important;
+        flex-wrap: wrap !important;
+      }
+      .admin-erp-shortcut h2 { margin: 0 0 6px !important; color: #fff !important; }
+      .admin-erp-shortcut p { margin: 0 !important; color: #cbd5e1 !important; font-weight: 600 !important; }
+      .admin-erp-shortcut a {
+        background: linear-gradient(135deg, #d4af37, #facc15) !important;
+        color: #111827 !important;
+        border-radius: 16px !important;
+        padding: 14px 18px !important;
+        font-weight: 900 !important;
+        text-decoration: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+      }
+
       @media (max-width: 850px) {
         #loginSection::before,
         #loginSection::after { display: none !important; }
@@ -231,11 +259,42 @@
     section.appendChild(wrapper);
   };
 
+  const addErpShortcut = () => {
+    const dash = document.getElementById('dashboardSection');
+    if (!dash || dash.classList.contains('hidden') || document.getElementById('adminErpShortcut')) return;
+
+    const shortcut = document.createElement('section');
+    shortcut.id = 'adminErpShortcut';
+    shortcut.className = 'admin-erp-shortcut';
+    shortcut.innerHTML = `
+      <div>
+        <h2>ERP Workspace</h2>
+        <p>Open finance, expenses, inventory/store, and staff management in a separate organized ERP page.</p>
+      </div>
+      <a href="/erp">Open ERP Workspace →</a>
+    `;
+
+    const firstCardGrid = dash.querySelector('.grid');
+    if (firstCardGrid) dash.insertBefore(shortcut, firstCardGrid.nextSibling);
+    else dash.prepend(shortcut);
+  };
+
+  const hideInlineErpModulesOnAdmin = () => {
+    if (location.pathname !== '/admin') return;
+    ['expenseErpCard', 'inventoryErpCard', 'staffErpCard', 'erpWorkspaceOrganizer'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  };
+
   const run = () => {
     injectStyles();
     enhanceLogin();
+    addErpShortcut();
+    hideInlineErpModulesOnAdmin();
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
   else run();
+  setInterval(run, 1200);
 })();
